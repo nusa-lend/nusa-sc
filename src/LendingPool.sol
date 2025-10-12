@@ -297,17 +297,17 @@ contract LendingPool is
 
     function calculateBorrowRate(address _token) public view returns (uint256 borrowRate) {
         if (totalSupplyAssets[_token] == 0) {
-            return 200; // 2% base rate when no supply (scaled by 100)
+            return 500; // 5% base rate when no supply (scaled by 100)
         }
 
         // Calculate utilization rate (scaled by 10000 for precision)
         uint256 utilizationRate = (totalBorrowAssets[_token] * 10000) / totalSupplyAssets[_token];
 
         // Interest rate model parameters
-        uint256 baseRate = 200; // 2% base rate (scaled by 100)
-        uint256 optimalUtilization = 8000; // 80% optimal utilization (scaled by 10000)
+        uint256 baseRate = 500; // 5% base rate (scaled by 100)
+        uint256 optimalUtilization = 7500; // 75% optimal utilization (scaled by 10000)
         uint256 rateAtOptimal = 1000; // 10% rate at optimal utilization (scaled by 100)
-        uint256 maxRate = 5000; // 50% maximum rate (scaled by 100)
+        uint256 maxRate = 10000; // 100% maximum rate (scaled by 100)
 
         if (utilizationRate <= optimalUtilization) {
             // Linear increase from base rate to optimal rate
@@ -315,7 +315,7 @@ contract LendingPool is
         } else {
             // Sharp increase after optimal utilization to discourage over-borrowing
             uint256 excessUtilization = utilizationRate - optimalUtilization;
-            uint256 maxExcessUtilization = 10000 - optimalUtilization; // 20% (scaled by 10000)
+            uint256 maxExcessUtilization = 10000 - optimalUtilization; // 25% (scaled by 10000)
 
             // Rate = rateAtOptimal + (excessUtilization * (maxRate - rateAtOptimal)) / maxExcessUtilization
             borrowRate = rateAtOptimal + ((excessUtilization * (maxRate - rateAtOptimal)) / maxExcessUtilization);

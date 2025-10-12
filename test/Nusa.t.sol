@@ -62,7 +62,7 @@ contract Nusa is Test, Helper {
     function _activateToken() internal {
         lendingPool.setToken(address(weth), true);
         lendingPool.setToken(address(usdc), true);
-        
+
         lendingPool.setBorrowLtv(address(weth), 0.8e18); // Set borrow LTV (80% = 0.8e18)
         lendingPool.setBorrowLtv(address(usdc), 0.8e18); // Set borrow LTV (80% = 0.8e18)
     }
@@ -76,8 +76,8 @@ contract Nusa is Test, Helper {
     // }
 
     // RUN
-    // forge test -vvv --match-test test_supplyCollateral
-    function test_supplyCollateral() public {
+    // forge test -vvv --match-test test_supply_collateral
+    function test_supply_collateral() public {
         vm.startPrank(alice);
         uint256 amount = 1_000e18;
         IERC20(address(weth)).approve(address(lendingPool), amount);
@@ -87,19 +87,78 @@ contract Nusa is Test, Helper {
     }
 
     // RUN
-    // forge test -vvv --match-test test_withdrawCollateral
-    function test_withdrawCollateral() public {
+    // forge test -vvv --match-test test_withdraw_collateral
+    function test_withdraw_collateral() public {
         vm.startPrank(alice);
         uint256 amount = 1_000e18;
-        
+
         // First supply collateral
         IERC20(address(weth)).approve(address(lendingPool), amount);
         lendingPool.supplyCollateral(alice, address(weth), amount);
         assertEq(lendingPool.userCollateral(alice, address(weth)), amount);
-        
+
         // Then withdraw it
         lendingPool.withdrawCollateral(alice, address(weth), amount);
         assertEq(lendingPool.userCollateral(alice, address(weth)), 0);
+        vm.stopPrank();
+    }
+
+    // RUN
+    // forge test -vvv --match-test test_supply_liquidity
+    function test_supply_liquidity() public {
+        vm.startPrank(alice);
+        uint256 amount = 1_000e6;
+        IERC20(address(usdc)).approve(address(lendingPool), amount);
+        lendingPool.supplyLiquidity(alice, address(usdc), amount);
+        assertEq(lendingPool.userSupplyShares(alice, address(usdc)), amount);
+        vm.stopPrank();
+    }
+
+    // RUN
+    // forge test -vvv --match-test test_withdraw_liquidity
+    function test_withdraw_liquidity() public {
+        test_supply_liquidity();
+        vm.startPrank(alice);
+        uint256 shares = 1_000e6;
+        lendingPool.withdrawLiquidity(alice, address(usdc), shares);
+        assertEq(lendingPool.userSupplyShares(alice, address(usdc)), 0);
+        vm.stopPrank();
+    }
+
+    // RUN
+    // forge test -vvv --match-test test_borrow
+    function test_borrow() public {
+        test_supply_collateral();
+        test_supply_liquidity();
+
+        vm.startPrank(alice);
+        uint256 amount = 500e6;
+        lendingPool.borrow(alice, address(usdc), amount);
+        assertEq(lendingPool.userBorrowShares(alice, address(usdc)), amount);
+        vm.stopPrank();
+
+        console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
+        console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(usdc)));
+
+        vm.warp(block.timestamp + 365 days);
+        lendingPool.accrueInterest(address(usdc));
+
+        console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
+        console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(usdc)));
+    }
+
+    // RUN
+    // forge test -vvv --match-test test_repay
+    function test_repay() public {
+        test_borrow();
+        vm.startPrank(alice);
+        uint256 shares = 500e6;
+        uint256 amount = ((shares * lendingPool.totalBorrowAssets(address(usdc))) / lendingPool.totalBorrowShares(address(usdc)));
+
+        IERC20(address(usdc)).approve(address(lendingPool), amount);
+
+        lendingPool.repay(alice, address(usdc), shares);
+        assertEq(lendingPool.userBorrowShares(alice, address(usdc)), 0);
         vm.stopPrank();
     }
 }
