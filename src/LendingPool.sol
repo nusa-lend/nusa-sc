@@ -12,6 +12,7 @@ import {ITokenDataStream} from "./interfaces/ITokenDataStream.sol";
 import {IRouter} from "./interfaces/IRouter.sol";
 import {IIsHealthy} from "./interfaces/IIsHealthy.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IOAppBorrow} from "./interfaces/IOAppBorrow.sol";
 
 contract LendingPool is
     Initializable,
@@ -31,6 +32,7 @@ contract LendingPool is
     error InvalidShares(address _token, uint256 _shares, uint256 _userSupplyShares);
     error ZeroAmount();
     error TokenNotActive(address _token);
+    error UserAccessControl(address _sender, address _user);
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -44,7 +46,7 @@ contract LendingPool is
     mapping(address => bool) public operator;
     mapping(address => bool) public tokenActive;
     mapping(address => uint256) public totalCollateral;
-    mapping(address => mapping(address => uint256)) public userCollateral; // user => token => amount
+    mapping(address => mapping(uint256 => mapping(address => uint256))) public userCollateral; // user => chainid => token => amount
 
     mapping(address => uint256) public totalSupplyAssets;
     mapping(address => uint256) public totalSupplyShares;
@@ -52,7 +54,7 @@ contract LendingPool is
 
     mapping(address => uint256) public totalBorrowAssets;
     mapping(address => uint256) public totalBorrowShares;
-    mapping(address => mapping(address => uint256)) public userBorrowShares;
+    mapping(address => mapping(uint256 => mapping(address => uint256))) public userBorrowShares; // user => chainid => token => shares
 
     mapping(address => uint256) public borrowLtv;
     mapping(address => uint256) public lastAccrued;
@@ -62,7 +64,7 @@ contract LendingPool is
     event WithdrawCollateral(address indexed user, address indexed token, uint256 amount);
     event SupplyLiquidity(address indexed user, address indexed token, uint256 amount);
     event WithdrawLiquidity(address indexed user, address indexed token, uint256 amount);
-    event Borrow(address indexed user, address indexed token, uint256 amount);
+    event Borrow(address indexed user, address indexed token, uint256 amount, uint256 chainDst);
     event Repay(address indexed user, address indexed token, uint256 amount);
     event ChainIdSet(uint256 chainId);
     event TokenSet(address token, bool active);
@@ -76,6 +78,11 @@ contract LendingPool is
 
     modifier isTokenActive(address _token) {
         _isTokenActive(_token);
+        _;
+    }
+
+    modifier userAccessControl(address _user) {
+        _userAccessControl(_user);
         _;
     }
 
@@ -104,7 +111,7 @@ contract LendingPool is
     {
         accrueInterest(_token);
         totalCollateral[_token] += _amount;
-        userCollateral[_user][_token] += _amount;
+        userCollateral[_user][block.chainid][_token] += _amount;
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
         emit SupplyCollateral(_user, _token, _amount);
@@ -116,24 +123,16 @@ contract LendingPool is
         isTokenActive(_token)
         nonReentrant
     {
-        if (_amount > userCollateral[_user][_token]) {
-            revert InsufficientCollateral(_token, _amount, userCollateral[_user][_token]);
+        if (_amount > userCollateral[_user][block.chainid][_token]) {
+            revert InsufficientCollateral(_token, _amount, userCollateral[_user][block.chainid][_token]);
         }
 
         accrueInterest(_token);
-        
+
         totalCollateral[_token] -= _amount;
-        userCollateral[_user][_token] -= _amount;
-        
-        IIsHealthy(IRouter(router).isHealthy()).isHealthy(
-            borrowLtv[_token],
-            _user,
-            tokens,
-            _token,
-            totalBorrowAssets[_token],
-            totalBorrowShares[_token],
-            userBorrowShares[_user][_token]
-        );
+        userCollateral[_user][block.chainid][_token] -= _amount;
+
+        // IIsHealthy(IRouter(router).isHealthy()).isHealthy(borrowLtv[_token],_user,tokens,_token,totalBorrowAssets[_token],totalBorrowShares[_token],userBorrowShares[_user][_token]);
 
         IERC20(_token).safeTransfer(_user, _amount);
 
@@ -157,7 +156,7 @@ contract LendingPool is
         userSupplyShares[_user][_token] += shares;
         totalSupplyShares[_token] += shares;
         totalSupplyAssets[_token] += _amount;
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount); // split between operator and user
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
         emit SupplyLiquidity(_user, _token, _amount);
     }
@@ -188,38 +187,28 @@ contract LendingPool is
         emit WithdrawLiquidity(_user, _token, amount);
     }
 
-    function borrow(address _user, address _token, uint256 _amount)
+    function borrow(address _user, address _token, uint256 _amount, uint256 _chainDst)
         public
+        payable
         checkTokenDataStream(_token)
         isTokenActive(_token)
+        userAccessControl(_user)
         nonReentrant
     {
         if (_amount == 0) revert ZeroAmount();
         accrueInterest(_token);
-        uint256 shares = 0;
-        if (totalBorrowShares[_token] == 0) {
-            shares = _amount;
+        _borrow(_user, _token, _amount, _chainDst);
+        if (msg.sender == _oapp(block.chainid)) {
+            IERC20(_token).safeTransfer(_user, _amount);
+        } else if (_chainDst == block.chainid) {
+            IERC20(_token).safeTransfer(_user, _amount);
         } else {
-            shares = ((_amount * totalBorrowShares[_token]) / totalBorrowAssets[_token]);
+            bytes memory options = "";
+            IOAppBorrow(_oapp(block.chainid)).sendString{value: msg.value}(
+                uint32(_endPointId(_chainDst)), _amount, _token, options
+            );
         }
-        userBorrowShares[_user][_token] += shares;
-        totalBorrowShares[_token] += shares;
-        totalBorrowAssets[_token] += _amount;
-        if (totalBorrowAssets[_token] > totalSupplyAssets[_token]) {
-            revert InsufficientLiquidity(_token, _amount, totalSupplyAssets[_token]);
-        }
-        IIsHealthy(IRouter(router).isHealthy()).isHealthy(
-            borrowLtv[_token],
-            _user,
-            tokens,
-            _token,
-            totalBorrowAssets[_token],
-            totalBorrowShares[_token],
-            userBorrowShares[_user][_token]
-        );
-        IERC20(_token).safeTransfer(_user, _amount); // split between operator and user
-
-        emit Borrow(_user, _token, _amount);
+        emit Borrow(_user, _token, _amount, _chainDst);
     }
 
     function repay(address _user, address _token, uint256 _shares)
@@ -229,17 +218,17 @@ contract LendingPool is
         nonReentrant
     {
         if (_shares == 0) revert ZeroAmount();
-        if (_shares > userBorrowShares[_user][_token]) {
-            revert InvalidShares(_token, _shares, userBorrowShares[_user][_token]);
+        if (_shares > userBorrowShares[_user][block.chainid][_token]) {
+            revert InvalidShares(_token, _shares, userBorrowShares[_user][block.chainid][_token]);
         }
         accrueInterest(_token);
         uint256 amount = ((_shares * totalBorrowAssets[_token]) / totalBorrowShares[_token]);
 
-        userBorrowShares[_user][_token] -= _shares;
+        userBorrowShares[_user][block.chainid][_token] -= _shares;
         totalBorrowShares[_token] -= _shares;
         totalBorrowAssets[_token] -= amount;
 
-        IERC20(_token).safeTransferFrom(_user, address(this), amount); // split between operator and user
+        IERC20(_token).safeTransferFrom(_user, address(this), amount);
         emit Repay(_user, _token, amount);
     }
 
@@ -268,18 +257,21 @@ contract LendingPool is
             }
 
             tokens.push(_token);
-            tokenActive[_token] = _active;
             lastAccrued[_token] = block.timestamp;
         } else {
             for (uint256 i = 0; i < tokens.length; i++) {
                 if (tokens[i] == _token) {
                     tokens[i] = tokens[tokens.length - 1];
                     tokens.pop();
-                    tokenActive[_token] = _active;
                     break;
                 }
             }
         }
+        emit TokenSet(_token, _active);
+    }
+
+    function setTokenActive(address _token, bool _active) public onlyRole(OWNER_ROLE) {
+        tokenActive[_token] = _active;
         emit TokenSet(_token, _active);
     }
 
@@ -349,6 +341,39 @@ contract LendingPool is
         if (!tokenActive[_token]) revert TokenNotActive(_token);
     }
 
+    function _userAccessControl(address _user) internal view {
+        if (msg.sender == _oapp(block.chainid)) return;
+        if (msg.sender != _user) revert UserAccessControl(msg.sender, _user);
+    }
+
+    function _borrow(address _user, address _token, uint256 _amount, uint256 _chainDst) internal {
+        uint256 shares = 0;
+        if (totalBorrowShares[_token] == 0) {
+            shares = _amount;
+        } else {
+            shares = ((_amount * totalBorrowShares[_token]) / totalBorrowAssets[_token]);
+        }
+        userBorrowShares[_user][_chainDst][_token] += shares;
+        totalBorrowShares[_token] += shares;
+        totalBorrowAssets[_token] += _amount;
+        if (totalBorrowAssets[_token] > totalSupplyAssets[_token]) {
+            revert InsufficientLiquidity(_token, _amount, totalSupplyAssets[_token]);
+        }
+        // IIsHealthy(IRouter(router).isHealthy()).isHealthy(borrowLtv[_token],_user,tokens,_token,totalBorrowAssets[_token],totalBorrowShares[_token],userBorrowShares[_user][_chainDst][_token]);
+    }
+
+    function _oapp(uint256 _chainId) internal view returns (address) {
+        return IRouter(router).chainIdToOApp(_chainId);
+    }
+
+    function _endPointId(uint256 _chainId) internal view returns (uint256) {
+        return IRouter(router).chainIdToLzEid(_chainId);
+    }
+
+    function _getCrosschainToken(address _token, uint256 _chainDst) internal view returns (address) {
+        return IRouter(router).crosschainToken(_token, _chainDst);
+    }
+
     function pause() public onlyRole(PAUSER_ROLE) {
         _pause();
     }
@@ -358,4 +383,7 @@ contract LendingPool is
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
+
+    receive() external payable {}
+    fallback() external payable {}
 }

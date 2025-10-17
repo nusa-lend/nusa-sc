@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {LendingPool} from "../src/LendingPool.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {Helper} from "../src/devtools/Helper.sol";
@@ -23,27 +23,26 @@ import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/O
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 
-// RUN
-// forge test --match-contract NusaTest -vvvv
-contract NusaTest is Test, Helper, HelperDeployment {
+contract Nusa is Script, Helper, HelperDeployment {
     using OptionsBuilder for bytes;
 
     USDC public usdc;
     WETH public weth;
     WBTC public wbtc;
-    // address public usdc;
-    // address public weth;
-    // address public wbtc;
+
+    address public usdc_deployed;
+    address public weth_deployed;
+    address public wbtc_deployed;
+    address public lendingPool_deployed;
+    address public oappBorrow_deployed;
+    address public router_deployed;
+
     Router public router;
     IsHealthy public isHealthy;
     TokenDataStream public tokenDataStream;
     LendingPool public lendingPool;
     ERC1967Proxy public proxy;
     OAppBorrow public oappBorrow;
-
-    address public owner = makeAddr("owner");
-    address public alice = makeAddr("alice");
-
     uint32 dstEid0;
     uint32 dstEid1;
 
@@ -62,26 +61,38 @@ contract NusaTest is Test, Helper, HelperDeployment {
     uint32 constant RECEIVE_CONFIG_TYPE = 2;
     uint16 constant SEND = 1; // Message type for send function
 
-    function setUp() public {
+    uint256 privateKey = vm.envUint("PRIVATE_KEY");
+    address public owner = vm.envAddress("PUBLIC_KEY");
+
+    function run() public {
         vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        vm.startPrank(owner);
-        _deployMockToken();
-        _deployNusaCore();
-        _activateToken();
+        vm.startBroadcast(privateKey);
+
+        usdc_deployed = block.chainid == 8453 ? BASE_USDC : HYPE_USDC;
+        weth_deployed = block.chainid == 8453 ? BASE_WETH : HYPE_WETH;
+        wbtc_deployed = block.chainid == 8453 ? BASE_WBTC : HYPE_WBTC;
+        lendingPool_deployed = block.chainid == 8453 ? BASE_LendingPool : address(0);
+        oappBorrow_deployed = block.chainid == 8453 ? BASE_OAppBorrow : address(0);
+        router_deployed = block.chainid == 8453 ? BASE_Router : address(0);
+        // _deployMockToken();
+        // _deployNusaCore();
+        // _activateToken();
         _getUtils(); // Initialize endpoint and LayerZero config variables
-        _deployOAppBorrow();
-        _setLibraries();
-        _setSendConfig();
-        _setReceiveConfig();
+        // _deployOAppBorrow();
+        // _setLibraries();
+        // _setSendConfig();
+        // _setReceiveConfig();
         _setPeers();
         _setEnforcedOptions();
-        _setChainId();
-        router.setChainIdToLzEid(block.chainid == 8453 ? 999 : 8453, dstEid1);
-        router.setChainIdToOApp(8453, address(oappBorrow));
-        vm.stopPrank();
-        deal(address(usdc), alice, 100_000e6);
-        deal(address(weth), alice, 100_000e18);
-        vm.deal(alice, 100_000e18);
+        // _setChainId();
+
+        // router.setChainIdToLzEid(block.chainid == 8453 ? 999 : 8453, dstEid1);
+        // router.setChainIdToOApp(8453, address(oappBorrow));
+
+        Router(router_deployed).setChainIdToLzEid(block.chainid == 8453 ? 999 : 8453, dstEid1);
+        Router(router_deployed).setChainIdToOApp(8453, address(oappBorrow_deployed));
+
+        vm.stopBroadcast();
     }
 
     function _deployMockToken() internal {
@@ -95,16 +106,24 @@ contract NusaTest is Test, Helper, HelperDeployment {
 
         tokenDataStream.setTokenPriceFeed(address(usdc), block.chainid == 8453 ? address(BASE_USDC_USD) : address(0));
         tokenDataStream.setTokenPriceFeed(address(weth), block.chainid == 8453 ? address(BASE_ETH_USD) : address(0));
+
+        console.log("address public BASE_USDC = %s;", address(usdc));
+        console.log("address public BASE_WETH = %s;", address(weth));
+        console.log("address public BASE_WBTC = %s;", address(wbtc));
+        console.log("address public BASE_TokenDataStream = %s;", address(tokenDataStream));
     }
 
     function _deployNusaCore() internal {
         router = new Router();
-
+        console.log("address public BASE_Router = %s;", address(router));
         isHealthy = new IsHealthy(address(router));
+        console.log("address public BASE_IsHealthy = %s;", address(isHealthy));
 
         lendingPool = new LendingPool();
+        console.log("address public BASE_LendingPool = %s;", address(lendingPool));
         bytes memory data = abi.encodeWithSelector(lendingPool.initialize.selector);
         proxy = new ERC1967Proxy(address(lendingPool), data);
+        console.log("address public BASE_Proxy = %s;", address(proxy));
         lendingPool = LendingPool(payable(proxy));
         lendingPool.setRouter(address(router));
 
@@ -166,6 +185,7 @@ contract NusaTest is Test, Helper, HelperDeployment {
     function _deployOAppBorrow() internal {
         oappBorrow = new OAppBorrow(endpoint, owner);
         oappBorrow.setLendingPool(address(lendingPool));
+        console.log("address public BASE_OAppBorrow = %s;", address(oappBorrow));
     }
 
     /// @notice Set send and receive libraries for LayerZero endpoint
@@ -220,10 +240,11 @@ contract NusaTest is Test, Helper, HelperDeployment {
     /// @notice Set peer connections between OApps on different chains
     function _setPeers() internal {
         // Set peer to itself for same chain
-        oappBorrow.setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow)))));
+        // oappBorrow.setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow)))));
+        OAppBorrow(oappBorrow_deployed).setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow_deployed)))));
 
         // Set peer to remote oappBorrow for cross-chain (use same address for testing)
-        oappBorrow.setPeer(dstEid1, bytes32(uint256(uint160(address(oappBorrow)))));
+        // oappBorrow.setPeer(dstEid1, bytes32(uint256(uint160(address(oappBorrow)))));
     }
 
     /// @notice Set enforced execution options for specific message types
@@ -235,127 +256,16 @@ contract NusaTest is Test, Helper, HelperDeployment {
         enforcedOptions[0] = EnforcedOptionParam({eid: dstEid0, msgType: SEND, options: options1});
         enforcedOptions[1] = EnforcedOptionParam({eid: dstEid1, msgType: SEND, options: options2});
 
-        oappBorrow.setEnforcedOptions(enforcedOptions);
+        // oappBorrow.setEnforcedOptions(enforcedOptions);
+        OAppBorrow(oappBorrow_deployed).setEnforcedOptions(enforcedOptions);
     }
 
     function _setChainId() internal {
-        lendingPool.setChainId(block.chainid == 8453 ? 999 : 8453);
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_setChainId
-    // function test_setChainId() public {
-    //     vm.startPrank(owner);
-    //     lendingPool.setChainId(8453);
-    //     vm.stopPrank();
-    // }
-
-    // RUN
-    // forge test -vvv --match-test test_supply_collateral
-    function test_supply_collateral() public {
-        vm.startPrank(alice);
-        uint256 amount = 1_000e18;
-        IERC20(address(weth)).approve(address(lendingPool), amount);
-        lendingPool.supplyCollateral(alice, address(weth), amount);
-        assertEq(lendingPool.userCollateral(alice, block.chainid, address(weth)), amount);
-        vm.stopPrank();
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_withdraw_collateral
-    function test_withdraw_collateral() public {
-        vm.startPrank(alice);
-        uint256 amount = 1_000e18;
-
-        // First supply collateral
-        IERC20(address(weth)).approve(address(lendingPool), amount);
-        lendingPool.supplyCollateral(alice, address(weth), amount);
-        assertEq(lendingPool.userCollateral(alice, block.chainid, address(weth)), amount);
-
-        // Then withdraw it
-        lendingPool.withdrawCollateral(alice, address(weth), amount);
-        assertEq(lendingPool.userCollateral(alice, block.chainid, address(weth)), 0);
-        vm.stopPrank();
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_supply_liquidity
-    function test_supply_liquidity() public {
-        vm.startPrank(alice);
-        uint256 amount = 1_000e6;
-        IERC20(address(usdc)).approve(address(lendingPool), amount);
-        lendingPool.supplyLiquidity(alice, address(usdc), amount);
-        assertEq(lendingPool.userSupplyShares(alice, address(usdc)), amount);
-        vm.stopPrank();
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_withdraw_liquidity
-    function test_withdraw_liquidity() public {
-        test_supply_liquidity();
-        vm.startPrank(alice);
-        uint256 shares = 1_000e6;
-        lendingPool.withdrawLiquidity(alice, address(usdc), shares);
-        assertEq(lendingPool.userSupplyShares(alice, address(usdc)), 0);
-        vm.stopPrank();
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_borrow
-    function test_borrow() public {
-        test_supply_collateral();
-        test_supply_liquidity();
-
-        vm.startPrank(alice);
-        uint256 amount = 500e6;
-        lendingPool.borrow(alice, address(usdc), amount, block.chainid);
-        assertEq(lendingPool.userBorrowShares(alice, block.chainid, address(usdc)), amount);
-        vm.stopPrank();
-
-        console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
-        console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(usdc)));
-
-        vm.warp(block.timestamp + 365 days);
-        lendingPool.accrueInterest(address(usdc));
-
-        console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
-        console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(usdc)));
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_repay
-    function test_repay() public {
-        test_borrow();
-        vm.startPrank(alice);
-        uint256 shares = 500e6;
-        uint256 amount =
-            ((shares * lendingPool.totalBorrowAssets(address(usdc))) / lendingPool.totalBorrowShares(address(usdc)));
-
-        IERC20(address(usdc)).approve(address(lendingPool), amount);
-
-        lendingPool.repay(alice, address(usdc), shares);
-        assertEq(lendingPool.userBorrowShares(alice, block.chainid, address(usdc)), 0);
-        vm.stopPrank();
-    }
-
-    // RUN
-    // forge test -vvv --match-test test_borrow_crosschain
-    function test_borrow_crosschain() public {
-        test_supply_collateral();
-        test_supply_liquidity();
-        vm.startPrank(alice);
-        uint256 amount = 500e6;
-
-        MessagingFee memory fee = IOAppBorrow(router.chainIdToOApp(block.chainid)).quoteSendString(
-            uint32(router.chainIdToLzEid(999)), amount, address(usdc), "", false
-        );
-        console.log("fee", fee.nativeFee);
-
-        lendingPool.borrow{value: fee.nativeFee}(alice, address(usdc), amount, 999);
-        assertEq(lendingPool.userBorrowShares(alice, 999, address(usdc)), amount);
-        vm.stopPrank();
-
-        console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
-        console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(usdc)));
+        // lendingPool.setChainId(block.chainid == 8453 ? 999 : 8453);
+        LendingPool(payable(lendingPool_deployed)).setChainId(block.chainid == 8453 ? 999 : 8453);
     }
 }
+
+// RUN
+// forge script Nusa --broadcast -vvv --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY
+// forge script Nusa -vvv

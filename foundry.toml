@@ -16,9 +16,9 @@ remappings = [
 ]
 
 [rpc_endpoints]
-base_mainnet="https://base.drpc.org"
+base_mainnet="https://1rpc.io/base"
 
 [lint]
-exclude_lints = ["unsafe-typecast"]
+exclude_lints = ["unsafe-typecast", "mixed-case-variable"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

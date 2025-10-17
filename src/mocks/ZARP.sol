@@ -4,8 +4,8 @@ pragma solidity ^0.8.22;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract WETH is ERC20, Ownable {
-    constructor() ERC20("WETH", "WETH") Ownable(msg.sender) {}
+contract ZARP is ERC20, Ownable {
+    constructor() ERC20("ZARP", "ZARP") Ownable(msg.sender) {}
 
     function decimals() public pure override returns (uint8) {
         return 18;

@@ -24,11 +24,13 @@ contract IsHealthy is Ownable {
     function isHealthy(
         uint256 ltv,
         address user,
-        address[] memory tokens,
         address borrowToken,
+        address[] memory tokens,
+        uint256[] memory chainIds,
         uint256 totalBorrowAssets,
         uint256 totalBorrowShares,
-        uint256 userBorrowShares
+        uint256 userBorrowShares,
+        address lendingPool
     ) public view {
         if (ltv == 0) revert InvalidLtv(ltv);
         
@@ -41,7 +43,7 @@ contract IsHealthy is Ownable {
         uint256 collateralValue = 0;
         for (uint256 i = 0; i < tokens.length; i++) {
             address token = tokens[i];
-            if (token != address(0)) {
+            if (token != address(0) && ILendingPool(lendingPool).tokenActive(token)) {
                 uint256 userCollateralAmount = _userCollateralAmount(user, tokens[i]);
                 uint256 collateralAdjustedPrice =
                     _userCollateralPrice(tokens[i]) * 1e18 / 10 ** _oracleDecimal(tokens[i]);
