@@ -16,7 +16,9 @@ remappings = [
 ]
 
 [rpc_endpoints]
-base_mainnet="https://1rpc.io/base"
+base_mainnet="wss://base-rpc.publicnode.com"
+hyperliquid_mainnet="https://rpc.hyperliquid.xyz/evm"
+arb_mainnet="https://lb.drpc.live/arbitrum/AoOdvxG5CECfnucrC7m69zQ8-dbSqXoR8LgRQrxF2MGT"
 
 [lint]
 exclude_lints = ["unsafe-typecast", "mixed-case-variable"]

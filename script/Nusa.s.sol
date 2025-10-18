@@ -22,6 +22,7 @@ import {ExecutorConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/Send
 import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {Pricefeed} from "../src/Pricefeed.sol";
 
 contract Nusa is Script, Helper, HelperDeployment {
     using OptionsBuilder for bytes;
@@ -33,6 +34,7 @@ contract Nusa is Script, Helper, HelperDeployment {
     address public usdc_deployed;
     address public weth_deployed;
     address public wbtc_deployed;
+    address public tokenDataStream_deployed;
     address public lendingPool_deployed;
     address public oappBorrow_deployed;
     address public router_deployed;
@@ -43,6 +45,7 @@ contract Nusa is Script, Helper, HelperDeployment {
     LendingPool public lendingPool;
     ERC1967Proxy public proxy;
     OAppBorrow public oappBorrow;
+    Pricefeed public pricefeed;
     uint32 dstEid0;
     uint32 dstEid1;
 
@@ -64,66 +67,106 @@ contract Nusa is Script, Helper, HelperDeployment {
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
     address public owner = vm.envAddress("PUBLIC_KEY");
 
+    bool public isDeployed;
+
     function run() public {
-        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startBroadcast(privateKey);
 
-        usdc_deployed = block.chainid == 8453 ? BASE_USDC : HYPE_USDC;
-        weth_deployed = block.chainid == 8453 ? BASE_WETH : HYPE_WETH;
-        wbtc_deployed = block.chainid == 8453 ? BASE_WBTC : HYPE_WBTC;
-        lendingPool_deployed = block.chainid == 8453 ? BASE_LendingPool : address(0);
-        oappBorrow_deployed = block.chainid == 8453 ? BASE_OAppBorrow : address(0);
-        router_deployed = block.chainid == 8453 ? BASE_Router : address(0);
-        // _deployMockToken();
+        isDeployed = _isDeployed(true);
+
+        _deployMockToken();
         // _deployNusaCore();
         // _activateToken();
-        _getUtils(); // Initialize endpoint and LayerZero config variables
+        // _getUtils(); // Initialize endpoint and LayerZero config variables
         // _deployOAppBorrow();
         // _setLibraries();
         // _setSendConfig();
         // _setReceiveConfig();
-        _setPeers();
-        _setEnforcedOptions();
+        // _setPeers();
+        // _setEnforcedOptions();
         // _setChainId();
 
-        // router.setChainIdToLzEid(block.chainid == 8453 ? 999 : 8453, dstEid1);
+        // router.setChainIdToLzEid(block.chainid == 8453 ? 42161 : 8453, dstEid1);
         // router.setChainIdToOApp(8453, address(oappBorrow));
 
-        Router(router_deployed).setChainIdToLzEid(block.chainid == 8453 ? 999 : 8453, dstEid1);
-        Router(router_deployed).setChainIdToOApp(8453, address(oappBorrow_deployed));
+        // Router(router_deployed).setChainIdToLzEid(block.chainid == 8453 ? 42161 : 8453, dstEid1);
+        // Router(router_deployed).setChainIdToOApp(8453, address(oappBorrow_deployed));
 
         vm.stopBroadcast();
     }
 
+    function _isDeployed(bool _deployed) internal returns (bool) {
+        if (_deployed) {
+            usdc_deployed = block.chainid == 8453 ? BASE_USDC : ARB_USDC;
+            weth_deployed = block.chainid == 8453 ? BASE_WETH : ARB_WETH;
+            wbtc_deployed = block.chainid == 8453 ? BASE_WBTC : ARB_WBTC;
+
+            tokenDataStream_deployed = block.chainid == 8453 ? BASE_TokenDataStream : ARB_TokenDataStream;
+            lendingPool_deployed = block.chainid == 8453 ? BASE_LendingPool : ARB_LendingPool;
+            oappBorrow_deployed = block.chainid == 8453 ? BASE_OAppBorrow : ARB_OAppBorrow;
+            router_deployed = block.chainid == 8453 ? BASE_Router : ARB_Router;
+        }
+        return _deployed;
+    }
+
     function _deployMockToken() internal {
-        usdc = new USDC();
-        weth = new WETH();
-        wbtc = new WBTC();
-        // usdc = block.chainid == 8453 ? BASE_USDC : HYPE_USDC;
-        // weth = block.chainid == 8453 ? BASE_WETH : HYPE_WETH;
-        // wbtc = block.chainid == 8453 ? BASE_WBTC : HYPE_WBTC;
-        tokenDataStream = new TokenDataStream();
+        if (!isDeployed) {
+            usdc = new USDC();
+            block.chainid == 8453
+                ? console.log("address public BASE_USDC = %s;", address(usdc))
+                : console.log("address public ARB_USDC = %s;", address(usdc));
+            weth = new WETH();
+            block.chainid == 8453
+                ? console.log("address public BASE_WETH = %s;", address(weth))
+                : console.log("address public ARB_WETH = %s;", address(weth));
+            wbtc = new WBTC();
+            block.chainid == 8453
+                ? console.log("address public BASE_WBTC = %s;", address(wbtc))
+                : console.log("address public ARB_WBTC = %s;", address(wbtc));
+        } else {
+            usdc = block.chainid == 8453 ? USDC(BASE_USDC) : USDC(ARB_USDC);
+            weth = block.chainid == 8453 ? WETH(BASE_WETH) : WETH(ARB_WETH);
+            wbtc = block.chainid == 8453 ? WBTC(BASE_WBTC) : WBTC(ARB_WBTC);
+        }
+        if (!isDeployed) {
+            tokenDataStream = new TokenDataStream();
+        } else {
+            tokenDataStream = TokenDataStream(tokenDataStream_deployed);
+        }
+        block.chainid == 8453
+            ? console.log("address public BASE_TokenDataStream = %s;", address(tokenDataStream))
+            : console.log("address public ARB_TokenDataStream = %s;", address(tokenDataStream));
 
-        tokenDataStream.setTokenPriceFeed(address(usdc), block.chainid == 8453 ? address(BASE_USDC_USD) : address(0));
-        tokenDataStream.setTokenPriceFeed(address(weth), block.chainid == 8453 ? address(BASE_ETH_USD) : address(0));
-
-        console.log("address public BASE_USDC = %s;", address(usdc));
-        console.log("address public BASE_WETH = %s;", address(weth));
-        console.log("address public BASE_WBTC = %s;", address(wbtc));
-        console.log("address public BASE_TokenDataStream = %s;", address(tokenDataStream));
+        if (block.chainid == 8453) {
+            tokenDataStream.setTokenPriceFeed(address(usdc), address(BASE_USDC_USD));
+            tokenDataStream.setTokenPriceFeed(address(weth), address(BASE_ETH_USD));
+        } else if (block.chainid == 42161) {
+            tokenDataStream.setTokenPriceFeed(address(usdc), address(ARB_USDC_USD));
+            tokenDataStream.setTokenPriceFeed(address(weth), address(ARB_ETH_USD));
+        }
     }
 
     function _deployNusaCore() internal {
         router = new Router();
-        console.log("address public BASE_Router = %s;", address(router));
+        block.chainid == 8453
+            ? console.log("address public BASE_Router = %s;", address(router))
+            : console.log("address public ARB_Router = %s;", address(router));
         isHealthy = new IsHealthy(address(router));
-        console.log("address public BASE_IsHealthy = %s;", address(isHealthy));
+        block.chainid == 8453
+            ? console.log("address public BASE_IsHealthy = %s;", address(isHealthy))
+            : console.log("address public ARB_IsHealthy = %s;", address(isHealthy));
 
         lendingPool = new LendingPool();
-        console.log("address public BASE_LendingPool = %s;", address(lendingPool));
+        block.chainid == 8453
+            ? console.log("address public BASE_LendingPool = %s;", address(lendingPool))
+            : console.log("address public ARB_LendingPool = %s;", address(lendingPool));
         bytes memory data = abi.encodeWithSelector(lendingPool.initialize.selector);
         proxy = new ERC1967Proxy(address(lendingPool), data);
-        console.log("address public BASE_Proxy = %s;", address(proxy));
+        block.chainid == 8453
+            ? console.log("address public BASE_Proxy = %s;", address(proxy))
+            : console.log("address public ARB_Proxy = %s;", address(proxy));
         lendingPool = LendingPool(payable(proxy));
         lendingPool.setRouter(address(router));
 
@@ -152,17 +195,17 @@ contract Nusa is Script, Helper, HelperDeployment {
             executor = BASE_EXECUTOR;
             srcEid = BASE_EID;
             dstEid0 = BASE_EID;
-            dstEid1 = HYPE_EID;
+            dstEid1 = ARB_EID;
             gracePeriod = uint32(0);
-        } else if (block.chainid == 999) {
-            endpoint = HYPE_LZ_ENDPOINT;
-            sendLib = HYPE_SEND_LIB;
-            receiveLib = HYPE_RECEIVE_LIB;
-            dvn1 = HYPE_DVN1;
-            dvn2 = HYPE_DVN2;
-            executor = HYPE_EXECUTOR;
-            srcEid = HYPE_EID;
-            dstEid0 = HYPE_EID;
+        } else if (block.chainid == 42161) {
+            endpoint = ARB_LZ_ENDPOINT;
+            sendLib = ARB_SEND_LIB;
+            receiveLib = ARB_RECEIVE_LIB;
+            dvn1 = ARB_DVN1;
+            dvn2 = ARB_DVN2;
+            executor = ARB_EXECUTOR;
+            srcEid = ARB_EID;
+            dstEid0 = ARB_EID;
             dstEid1 = BASE_EID;
             gracePeriod = uint32(0);
         }
@@ -185,7 +228,9 @@ contract Nusa is Script, Helper, HelperDeployment {
     function _deployOAppBorrow() internal {
         oappBorrow = new OAppBorrow(endpoint, owner);
         oappBorrow.setLendingPool(address(lendingPool));
-        console.log("address public BASE_OAppBorrow = %s;", address(oappBorrow));
+        block.chainid == 8453
+            ? console.log("address public BASE_OAppBorrow = %s;", address(oappBorrow))
+            : console.log("address public ARB_OAppBorrow = %s;", address(oappBorrow));
     }
 
     /// @notice Set send and receive libraries for LayerZero endpoint
@@ -240,8 +285,8 @@ contract Nusa is Script, Helper, HelperDeployment {
     /// @notice Set peer connections between OApps on different chains
     function _setPeers() internal {
         // Set peer to itself for same chain
-        // oappBorrow.setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow)))));
-        OAppBorrow(oappBorrow_deployed).setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow_deployed)))));
+        oappBorrow.setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow)))));
+        // OAppBorrow(oappBorrow_deployed).setPeer(dstEid0, bytes32(uint256(uint160(address(oappBorrow_deployed)))));
 
         // Set peer to remote oappBorrow for cross-chain (use same address for testing)
         // oappBorrow.setPeer(dstEid1, bytes32(uint256(uint160(address(oappBorrow)))));
@@ -256,16 +301,19 @@ contract Nusa is Script, Helper, HelperDeployment {
         enforcedOptions[0] = EnforcedOptionParam({eid: dstEid0, msgType: SEND, options: options1});
         enforcedOptions[1] = EnforcedOptionParam({eid: dstEid1, msgType: SEND, options: options2});
 
-        // oappBorrow.setEnforcedOptions(enforcedOptions);
-        OAppBorrow(oappBorrow_deployed).setEnforcedOptions(enforcedOptions);
+        oappBorrow.setEnforcedOptions(enforcedOptions);
+        // OAppBorrow(oappBorrow_deployed).setEnforcedOptions(enforcedOptions);
     }
 
     function _setChainId() internal {
-        // lendingPool.setChainId(block.chainid == 8453 ? 999 : 8453);
-        LendingPool(payable(lendingPool_deployed)).setChainId(block.chainid == 8453 ? 999 : 8453);
+        lendingPool.setChainId(block.chainid == 8453 ? 42161 : 8453);
+        // LendingPool(payable(lendingPool_deployed)).setChainId(block.chainid == 8453 ? 42161 : 8453);
     }
 }
 
 // RUN
 // forge script Nusa --broadcast -vvv --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY
+// forge script Nusa --broadcast -vvv
 // forge script Nusa -vvv
+// forge script Nusa --broadcast -vvv --verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY --with-gas-price 1gwei
+// forge script Nusa -vvv --with-gas-price 18gwei

@@ -1,0 +1,56 @@
+{
+  "transactions": [
+    {
+      "hash": null,
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0xe29a9fbdf3d83c126c6366d7f401473ab0850e7f",
+      "function": "approve(address,uint256)",
+      "arguments": [
+        "0xC60D72c8Cb53842f15cfFa8A0bb9DbC759E44452",
+        "100000000000000000000"
+      ],
+      "transaction": {
+        "from": "0xee03621ce83bbf6e3931bccf35b144354f16ccf7",
+        "to": "0xe29a9fbdf3d83c126c6366d7f401473ab0850e7f",
+        "gas": "0x10c4a",
+        "value": "0x0",
+        "input": "0x095ea7b3000000000000000000000000c60d72c8cb53842f15cffa8a0bb9dbc759e444520000000000000000000000000000000000000000000000056bc75e2d63100000",
+        "nonce": "0x3a",
+        "chainId": "0x2105"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": null,
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0xc60d72c8cb53842f15cffa8a0bb9dbc759e44452",
+      "function": "supplyCollateral(address,address,uint256)",
+      "arguments": [
+        "0xEe03621Ce83BbF6e3931BcCf35b144354F16ccf7",
+        "0xE29A9fBdf3d83c126C6366D7f401473Ab0850e7F",
+        "100000000000000000000"
+      ],
+      "transaction": {
+        "from": "0xee03621ce83bbf6e3931bccf35b144354f16ccf7",
+        "to": "0xc60d72c8cb53842f15cffa8a0bb9dbc759e44452",
+        "gas": "0x3a44d",
+        "value": "0x0",
+        "input": "0x4ae45103000000000000000000000000ee03621ce83bbf6e3931bccf35b144354f16ccf7000000000000000000000000e29a9fbdf3d83c126c6366d7f401473ab0850e7f0000000000000000000000000000000000000000000000056bc75e2d63100000",
+        "nonce": "0x3b",
+        "chainId": "0x2105"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1760769366330,
+  "chain": 8453,
+  "commit": "ad7e428"
+}

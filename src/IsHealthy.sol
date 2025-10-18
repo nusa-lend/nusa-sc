@@ -66,7 +66,7 @@ contract IsHealthy is Ownable {
     }
 
     function _userCollateralAmount(address _user, address _token) internal view returns (uint256) {
-        return ILendingPool(IRouter(router).lendingPool()).userCollateral(_user, _token);
+        return ILendingPool(IRouter(router).lendingPool()).userCollateral(_user, block.chainid, _token);
     }
 
     function _userCollateralPrice(address _token) internal view returns (uint256) {

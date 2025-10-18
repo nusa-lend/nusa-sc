@@ -9,5 +9,8 @@ contract Helper {
     // address public constant BASE_IDRX_USD;
     // address public constant BASE_PAXG_USD;
     // address public constant BASE_GIDR_USD;
-
+    address public constant ARB_ETH_USD = 0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612;
+    address public constant ARB_BTC_USD = 0x6ce185860a4963106506C203335A2910413708e9;
+    address public constant ARB_USDT_USD = 0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7;
+    address public constant ARB_USDC_USD = 0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3;
 }

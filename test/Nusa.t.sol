@@ -22,6 +22,7 @@ import {ExecutorConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/Send
 import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
+import {Pricefeed} from "../src/Pricefeed.sol";
 
 // RUN
 // forge test --match-contract NusaTest -vvvv
@@ -40,6 +41,7 @@ contract NusaTest is Test, Helper, HelperDeployment {
     LendingPool public lendingPool;
     ERC1967Proxy public proxy;
     OAppBorrow public oappBorrow;
+    Pricefeed public pricefeed;
 
     address public owner = makeAddr("owner");
     address public alice = makeAddr("alice");
@@ -63,7 +65,9 @@ contract NusaTest is Test, Helper, HelperDeployment {
     uint16 constant SEND = 1; // Message type for send function
 
     function setUp() public {
-        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("hyperliquid_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startPrank(owner);
         _deployMockToken();
         _deployNusaCore();
@@ -76,7 +80,7 @@ contract NusaTest is Test, Helper, HelperDeployment {
         _setPeers();
         _setEnforcedOptions();
         _setChainId();
-        router.setChainIdToLzEid(block.chainid == 8453 ? 999 : 8453, dstEid1);
+        router.setChainIdToLzEid(block.chainid == 8453 ? 42161 : 8453, dstEid1);
         router.setChainIdToOApp(8453, address(oappBorrow));
         vm.stopPrank();
         deal(address(usdc), alice, 100_000e6);
@@ -88,13 +92,23 @@ contract NusaTest is Test, Helper, HelperDeployment {
         usdc = new USDC();
         weth = new WETH();
         wbtc = new WBTC();
-        // usdc = block.chainid == 8453 ? BASE_USDC : HYPE_USDC;
-        // weth = block.chainid == 8453 ? BASE_WETH : HYPE_WETH;
-        // wbtc = block.chainid == 8453 ? BASE_WBTC : HYPE_WBTC;
+        // usdc = block.chainid == 8453 ? BASE_USDC : ARB_USDC;
+        // weth = block.chainid == 8453 ? BASE_WETH : ARB_WETH;
+        // wbtc = block.chainid == 8453 ? BASE_WBTC : ARB_WBTC;
         tokenDataStream = new TokenDataStream();
 
-        tokenDataStream.setTokenPriceFeed(address(usdc), block.chainid == 8453 ? address(BASE_USDC_USD) : address(0));
-        tokenDataStream.setTokenPriceFeed(address(weth), block.chainid == 8453 ? address(BASE_ETH_USD) : address(0));
+        if (block.chainid == 8453) {
+            tokenDataStream.setTokenPriceFeed(address(usdc), address(BASE_USDC_USD));
+            tokenDataStream.setTokenPriceFeed(address(weth), address(BASE_ETH_USD));
+        } else if (block.chainid == 42161) {
+            pricefeed = new Pricefeed(address(usdc));
+            pricefeed.setPrice(0, 1e8, 0, 0, 0);
+            tokenDataStream.setTokenPriceFeed(address(usdc), address(pricefeed));
+
+            pricefeed = new Pricefeed(address(weth));
+            pricefeed.setPrice(0, 4_000e8, 0, 0, 0);
+            tokenDataStream.setTokenPriceFeed(address(weth), address(pricefeed));
+        }
     }
 
     function _deployNusaCore() internal {
@@ -133,17 +147,17 @@ contract NusaTest is Test, Helper, HelperDeployment {
             executor = BASE_EXECUTOR;
             srcEid = BASE_EID;
             dstEid0 = BASE_EID;
-            dstEid1 = HYPE_EID;
+            dstEid1 = ARB_EID;
             gracePeriod = uint32(0);
-        } else if (block.chainid == 999) {
-            endpoint = HYPE_LZ_ENDPOINT;
-            sendLib = HYPE_SEND_LIB;
-            receiveLib = HYPE_RECEIVE_LIB;
-            dvn1 = HYPE_DVN1;
-            dvn2 = HYPE_DVN2;
-            executor = HYPE_EXECUTOR;
-            srcEid = HYPE_EID;
-            dstEid0 = HYPE_EID;
+        } else if (block.chainid == 42161) {
+            endpoint = ARB_LZ_ENDPOINT;
+            sendLib = ARB_SEND_LIB;
+            receiveLib = ARB_RECEIVE_LIB;
+            dvn1 = ARB_DVN1;
+            dvn2 = ARB_DVN2;
+            executor = ARB_EXECUTOR;
+            srcEid = ARB_EID;
+            dstEid0 = ARB_EID;
             dstEid1 = BASE_EID;
             gracePeriod = uint32(0);
         }
@@ -166,6 +180,9 @@ contract NusaTest is Test, Helper, HelperDeployment {
     function _deployOAppBorrow() internal {
         oappBorrow = new OAppBorrow(endpoint, owner);
         oappBorrow.setLendingPool(address(lendingPool));
+        router.setChainIdToOApp(block.chainid, address(oappBorrow));
+        router.setChainIdToLzEid(block.chainid == 8453 ? 8453 : 42161, dstEid0);
+        router.setChainIdToLzEid(block.chainid == 8453 ? 42161 : 8453, dstEid1);
     }
 
     /// @notice Set send and receive libraries for LayerZero endpoint
@@ -239,7 +256,7 @@ contract NusaTest is Test, Helper, HelperDeployment {
     }
 
     function _setChainId() internal {
-        lendingPool.setChainId(block.chainid == 8453 ? 999 : 8453);
+        lendingPool.setChainId(block.chainid == 8453 ? 42161 : 8453);
     }
 
     // RUN
@@ -347,12 +364,12 @@ contract NusaTest is Test, Helper, HelperDeployment {
         uint256 amount = 500e6;
 
         MessagingFee memory fee = IOAppBorrow(router.chainIdToOApp(block.chainid)).quoteSendString(
-            uint32(router.chainIdToLzEid(999)), amount, address(usdc), "", false
+            uint32(router.chainIdToLzEid(42161)), amount, address(usdc), "", false
         );
         console.log("fee", fee.nativeFee);
 
-        lendingPool.borrow{value: fee.nativeFee}(alice, address(usdc), amount, 999);
-        assertEq(lendingPool.userBorrowShares(alice, 999, address(usdc)), amount);
+        lendingPool.borrow{value: fee.nativeFee}(alice, address(usdc), amount, 42161);
+        assertEq(lendingPool.userBorrowShares(alice, 42161, address(usdc)), amount);
         vm.stopPrank();
 
         console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
