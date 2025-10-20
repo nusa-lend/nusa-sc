@@ -19,11 +19,11 @@ contract SupplyLiquidityScript is Script, HelperDeployment {
     address public token;
 
     function run() public {
-        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
 
         lendingPool = block.chainid == 8453 ? BASE_Proxy : ARB_Proxy;
-        token = block.chainid == 8453 ? BASE_USDC : ARB_USDC;
+        token = block.chainid == 8453 ? BASE_CADC : ARB_CADC;
 
         vm.startBroadcast(privateKey);
         console.log("Token = %s", IERC20Metadata(token).name());

@@ -23,6 +23,15 @@ import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/O
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 import {Pricefeed} from "../src/Pricefeed.sol";
+import {CADC} from "../src/mocks/CADC.sol";
+import {CNGN} from "../src/mocks/CNGN.sol";
+import {KRWT} from "../src/mocks/KRWT.sol";
+import {TRYB} from "../src/mocks/TRYB.sol";
+import {MXNE} from "../src/mocks/MXNE.sol";
+import {XSGD} from "../src/mocks/XSGD.sol";
+import {ZARP} from "../src/mocks/ZARP.sol";
+import {IDRX} from "../src/mocks/IDRX.sol";
+import {EURC} from "../src/mocks/EURC.sol";
 
 contract Nusa is Script, Helper, HelperDeployment {
     using OptionsBuilder for bytes;
@@ -30,10 +39,28 @@ contract Nusa is Script, Helper, HelperDeployment {
     USDC public usdc;
     WETH public weth;
     WBTC public wbtc;
+    CADC public cadc;
+    CNGN public cngn;
+    KRWT public krwt;
+    TRYB public tryb;
+    MXNE public mxne;
+    XSGD public xsgd;
+    ZARP public zarp;
+    IDRX public idrx;
+    EURC public eurc;
 
     address public usdc_deployed;
     address public weth_deployed;
     address public wbtc_deployed;
+    address public cadc_deployed;
+    address public cngn_deployed;
+    address public krwt_deployed;
+    address public tryb_deployed;
+    address public mxne_deployed;
+    address public xsgd_deployed;
+    address public zarp_deployed;
+    address public idrx_deployed;
+    address public eurc_deployed;
     address public tokenDataStream_deployed;
     address public lendingPool_deployed;
     address public oappBorrow_deployed;
@@ -77,7 +104,7 @@ contract Nusa is Script, Helper, HelperDeployment {
 
         isDeployed = _isDeployed(true);
 
-        // _deployMockToken();
+        _deployMockToken();
         // _deployNusaCore();
         // _activateToken();
         // _getUtils(); // Initialize endpoint and LayerZero config variables
@@ -105,7 +132,7 @@ contract Nusa is Script, Helper, HelperDeployment {
             wbtc_deployed = block.chainid == 8453 ? BASE_WBTC : ARB_WBTC;
 
             tokenDataStream_deployed = block.chainid == 8453 ? BASE_TokenDataStream : ARB_TokenDataStream;
-            lendingPool_deployed = block.chainid == 8453 ? BASE_LendingPool : ARB_LendingPool;
+            lendingPool_deployed = block.chainid == 8453 ? BASE_Proxy : ARB_Proxy;
             oappBorrow_deployed = block.chainid == 8453 ? BASE_OAppBorrow : ARB_OAppBorrow;
             router_deployed = block.chainid == 8453 ? BASE_Router : ARB_Router;
         }
@@ -130,6 +157,15 @@ contract Nusa is Script, Helper, HelperDeployment {
             usdc = block.chainid == 8453 ? USDC(BASE_USDC) : USDC(ARB_USDC);
             weth = block.chainid == 8453 ? WETH(BASE_WETH) : WETH(ARB_WETH);
             wbtc = block.chainid == 8453 ? WBTC(BASE_WBTC) : WBTC(ARB_WBTC);
+            cadc = block.chainid == 8453 ? CADC(BASE_CADC) : CADC(ARB_CADC);
+            cngn = block.chainid == 8453 ? CNGN(BASE_CNGN) : CNGN(ARB_CNGN);
+            krwt = block.chainid == 8453 ? KRWT(BASE_KRWT) : KRWT(ARB_KRWT);
+            tryb = block.chainid == 8453 ? TRYB(BASE_TRYB) : TRYB(ARB_TRYB);
+            mxne = block.chainid == 8453 ? MXNE(BASE_MXNE) : MXNE(ARB_MXNE);
+            xsgd = block.chainid == 8453 ? XSGD(BASE_XSGD) : XSGD(ARB_XSGD);
+            zarp = block.chainid == 8453 ? ZARP(BASE_ZARP) : ZARP(ARB_ZARP);
+            idrx = block.chainid == 8453 ? IDRX(BASE_IDRX) : IDRX(ARB_IDRX);
+            eurc = block.chainid == 8453 ? EURC(BASE_EURC) : EURC(ARB_EURC);
         }
         if (!isDeployed) {
             tokenDataStream = new TokenDataStream();
@@ -141,11 +177,41 @@ contract Nusa is Script, Helper, HelperDeployment {
             : console.log("address public ARB_TokenDataStream = %s;", address(tokenDataStream));
 
         if (block.chainid == 8453) {
-            tokenDataStream.setTokenPriceFeed(address(usdc), address(BASE_USDC_USD));
-            tokenDataStream.setTokenPriceFeed(address(weth), address(BASE_ETH_USD));
+            // tokenDataStream.setTokenPriceFeed(address(usdc), address(BASE_USDC_USD));
+            // tokenDataStream.setTokenPriceFeed(address(weth), address(BASE_ETH_USD));
+            // tokenDataStream.setTokenPriceFeed(address(cadc), address(BASE_CADC_USD));
+            // tokenDataStream.setTokenPriceFeed(address(cngn), address(BASE_CNGN_USD));
+            // tokenDataStream.setTokenPriceFeed(address(krwt), address(BASE_KRWT_USD));
+            // tokenDataStream.setTokenPriceFeed(address(tryb), address(BASE_TRYB_USD));
+            // tokenDataStream.setTokenPriceFeed(address(mxne), address(BASE_MXNE_USD));
+            // tokenDataStream.setTokenPriceFeed(address(xsgd), address(BASE_XSGD_USD));
+            // tokenDataStream.setTokenPriceFeed(address(zarp), address(BASE_ZARP_USD));
+            // tokenDataStream.setTokenPriceFeed(address(idrx), address(BASE_IDRX_USD));
+            // tokenDataStream.setTokenPriceFeed(address(eurc), address(BASE_EURC_USD));
+
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(usdc), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(weth), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cadc), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cngn), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(krwt), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(tryb), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(mxne), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(xsgd), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(zarp), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(idrx), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(eurc), true);
         } else if (block.chainid == 42161) {
             tokenDataStream.setTokenPriceFeed(address(usdc), address(ARB_USDC_USD));
             tokenDataStream.setTokenPriceFeed(address(weth), address(ARB_ETH_USD));
+            tokenDataStream.setTokenPriceFeed(address(cadc), address(ARB_CADC_USD));
+            tokenDataStream.setTokenPriceFeed(address(cngn), address(ARB_CNGN_USD));
+            tokenDataStream.setTokenPriceFeed(address(krwt), address(ARB_KRWT_USD));
+            tokenDataStream.setTokenPriceFeed(address(tryb), address(ARB_TRYB_USD));
+            tokenDataStream.setTokenPriceFeed(address(mxne), address(ARB_MXNE_USD));
+            tokenDataStream.setTokenPriceFeed(address(xsgd), address(ARB_XSGD_USD));
+            tokenDataStream.setTokenPriceFeed(address(zarp), address(ARB_ZARP_USD));
+            tokenDataStream.setTokenPriceFeed(address(idrx), address(ARB_IDRX_USD));
+            tokenDataStream.setTokenPriceFeed(address(eurc), address(ARB_EURC_USD));
         }
     }
 

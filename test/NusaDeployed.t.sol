@@ -64,9 +64,9 @@ contract NusaDeployedTest is Test, Helper, HelperDeployment {
     uint16 constant SEND = 1; // Message type for send function
 
     function setUp() public {
-        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
         // vm.createSelectFork(vm.rpcUrl("hyperliquid_mainnet"));
-        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startPrank(owner);
         _deployMockToken();
         _deployNusaCore();
@@ -381,5 +381,12 @@ contract NusaDeployedTest is Test, Helper, HelperDeployment {
 
         console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(usdc)));
         console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(usdc)));
+    }
+
+    // RUN
+    // forge test -vvv --match-test test_total_supply_assets --match-contract NusaDeployedTest
+    function test_total_supply_assets() public {
+        console.log("totalBorrowAssets(USDC)", lendingPool.totalBorrowAssets(address(BASE_CADC)));
+        console.log("totalSupplyAssets(USDC)", lendingPool.totalSupplyAssets(address(BASE_CADC)));
     }
 }
