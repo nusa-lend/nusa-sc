@@ -5,6 +5,7 @@ import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp
 import {OAppOptionsType3} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ILendingPool} from "../interfaces/ILendingPool.sol";
+import {IRouter} from "../interfaces/IRouter.sol";
 
 contract OAppBorrow is OApp, OAppOptionsType3 {
     // address public lastMessage;
@@ -13,6 +14,9 @@ contract OAppBorrow is OApp, OAppOptionsType3 {
     uint16 public constant SEND = 1;
 
     address public lendingPool;
+    address public router;
+
+    error TokenNotSet(address token, uint32 dstEid);
 
     event MessageReceived(uint32 indexed srcEid, address indexed sender, uint64 nonce, address token);
     event SetLendingPool(address lendingPool);
@@ -30,10 +34,11 @@ contract OAppBorrow is OApp, OAppOptionsType3 {
         fee = _quote(_dstEid, _message, combineOptions(_dstEid, SEND, _options), _payInLzToken);
     }
 
-    function sendString(uint32 _dstEid, uint256 _amount, address _token, bytes calldata _options)
-        external
-        payable
-    {
+    function sendString(uint32 _dstEid, uint256 _amount, address _token, bytes calldata _options) external payable {
+        _token = IRouter(router).crosschainTokenByLzEid(address(_token), _dstEid);
+        if (_token == address(0)) {
+            revert TokenNotSet(address(_token), _dstEid);
+        }
         bytes memory _message = abi.encode(_amount, _token);
 
         _lzSend(
@@ -74,7 +79,7 @@ contract OAppBorrow is OApp, OAppOptionsType3 {
         //    e.g., emit an event, mint tokens, call another contract, etc.
         //    emit MessageReceived(_origin.srcEid, _token);
 
-        ILendingPool(lendingPool).borrow(sender, token, amount, block.chainid);
+        ILendingPool(payable(lendingPool)).borrow(sender, token, amount, block.chainid);
 
         emit MessageReceived(_origin.srcEid, sender, _origin.nonce, token);
     }
@@ -82,5 +87,9 @@ contract OAppBorrow is OApp, OAppOptionsType3 {
     function setLendingPool(address _lendingPool) public onlyOwner {
         lendingPool = _lendingPool;
         emit SetLendingPool(_lendingPool);
+    }
+
+    function setRouter(address _router) public onlyOwner {
+        router = _router;
     }
 }

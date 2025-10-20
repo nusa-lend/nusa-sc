@@ -46,6 +46,7 @@ contract Nusa is Script, Helper, HelperDeployment {
     ERC1967Proxy public proxy;
     OAppBorrow public oappBorrow;
     Pricefeed public pricefeed;
+
     uint32 dstEid0;
     uint32 dstEid1;
 
@@ -70,13 +71,13 @@ contract Nusa is Script, Helper, HelperDeployment {
     bool public isDeployed;
 
     function run() public {
-        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startBroadcast(privateKey);
 
         isDeployed = _isDeployed(true);
 
-        _deployMockToken();
+        // _deployMockToken();
         // _deployNusaCore();
         // _activateToken();
         // _getUtils(); // Initialize endpoint and LayerZero config variables
@@ -85,7 +86,7 @@ contract Nusa is Script, Helper, HelperDeployment {
         // _setSendConfig();
         // _setReceiveConfig();
         // _setPeers();
-        // _setEnforcedOptions();
+        _setEnforcedOptions();
         // _setChainId();
 
         // router.setChainIdToLzEid(block.chainid == 8453 ? 42161 : 8453, dstEid1);
@@ -294,15 +295,15 @@ contract Nusa is Script, Helper, HelperDeployment {
 
     /// @notice Set enforced execution options for specific message types
     function _setEnforcedOptions() internal {
-        bytes memory options1 = OptionsBuilder.newOptions().addExecutorLzReceiveOption(80000, 0);
-        bytes memory options2 = OptionsBuilder.newOptions().addExecutorLzReceiveOption(100000, 0);
+        bytes memory options1 = OptionsBuilder.newOptions().addExecutorLzReceiveOption(300000, 0);
+        bytes memory options2 = OptionsBuilder.newOptions().addExecutorLzReceiveOption(300000, 0);
 
         EnforcedOptionParam[] memory enforcedOptions = new EnforcedOptionParam[](2);
         enforcedOptions[0] = EnforcedOptionParam({eid: dstEid0, msgType: SEND, options: options1});
         enforcedOptions[1] = EnforcedOptionParam({eid: dstEid1, msgType: SEND, options: options2});
 
-        oappBorrow.setEnforcedOptions(enforcedOptions);
-        // OAppBorrow(oappBorrow_deployed).setEnforcedOptions(enforcedOptions);
+        // oappBorrow.setEnforcedOptions(enforcedOptions);
+        OAppBorrow(oappBorrow_deployed).setEnforcedOptions(enforcedOptions);
     }
 
     function _setChainId() internal {

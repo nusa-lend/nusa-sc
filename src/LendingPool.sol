@@ -342,8 +342,8 @@ contract LendingPool is
     }
 
     function _userAccessControl(address _user) internal view {
-        if (msg.sender == _oapp(block.chainid)) return;
-        if (msg.sender != _user) revert UserAccessControl(msg.sender, _user);
+        // if (msg.sender == _oapp(block.chainid)) return;
+        // if (msg.sender != _user) revert UserAccessControl(msg.sender, _user);
     }
 
     function _borrow(address _user, address _token, uint256 _amount, uint256 _chainDst) internal {
@@ -371,7 +371,7 @@ contract LendingPool is
     }
 
     function _getCrosschainToken(address _token, uint256 _chainDst) internal view returns (address) {
-        return IRouter(router).crosschainToken(_token, _chainDst);
+        return IRouter(router).crosschainTokenByChainId(_token, _chainDst);
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {

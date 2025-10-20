@@ -38,19 +38,19 @@ contract HelperDeployment {
     // address public ARB_USDC_USD = 0xe02E104D2B4e482f19E95aB7b630aB2697a03d91;
 
     address public BASE_TokenDataStream = 0xB113959014d95C555B8A908D794e73478e5509A8;
-    address public BASE_Router = 0xBEF0FDaCD983941D04f7f3450F4228DafE2CFEF2;
+    address public BASE_Router = 0x23c5462BcD096AbFdFe9A845A9E1Ec06bEa3F81B;
     address public BASE_IsHealthy = 0x9EDF457dB4C061E22CD87d3E4a886CeA967b629B;
-    address public BASE_LendingPool = 0x3119F2eEeD2FFe038B53b9C817fC602B1262EEF4;
+    address public BASE_LendingPool = 0xB16CA504965C1Bfe474D135e385348d37832dc12;
     address public BASE_Proxy = 0xC60D72c8Cb53842f15cfFa8A0bb9DbC759E44452;
 
     address public ARB_TokenDataStream = 0xC0473BD9e466A7E564b9f1A0065f1eFa41966D54;
-    address public ARB_Router = 0x5E4CB0eE8D6268383F45E81A8Cd0468CC0Acd957;
+    address public ARB_Router = 0xcC0563F952FADb3a7D54A448AEB079D7d8F849fa;
     address public ARB_IsHealthy = 0x9383C92c309c4Db56Fa3Ee57a9Eb7ED8c5edDa22;
-    address public ARB_LendingPool = 0xc776D07f24b0F217eBE3183F51a620d1F65A6B0d;
+    address public ARB_LendingPool = 0x073AFb66d525c2002956C967994dE05B9b6Bb196;
     address public ARB_Proxy = 0x7FB63D9Faf99A34bCA04EFd5BA7F75dC6DB37f4D;
 
-    address public BASE_OAppBorrow = 0x548465328d18822eE31bEA8Cfcab945879D76f5C;
-    address public ARB_OAppBorrow = 0xB113959014d95C555B8A908D794e73478e5509A8;
+    address public BASE_OAppBorrow = 0x2099FDE6100bd4B7a5004a1aE4077bE9469984A8;
+    address public ARB_OAppBorrow = 0x23c5462BcD096AbFdFe9A845A9E1Ec06bEa3F81B;
 
     // ** SELF DEPLOYED Mainnet **
     // *******************

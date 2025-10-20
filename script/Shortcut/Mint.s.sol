@@ -12,15 +12,15 @@ interface IToken {
 
 contract MintScript is Script, HelperDeployment {
     // *** FILL THIS ***
-    address public token = BASE_WETH;
+    address public token = ARB_WETH;
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
     address public minter = vm.envAddress("PUBLIC_KEY");
     uint256 public amount = 100_000;
     // *****************
 
     function run() public {
-        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startBroadcast(privateKey);
         console.log("Token = %s", IERC20Metadata(token).name());
         console.log("Balance before minting = %s", IERC20(token).balanceOf(minter));

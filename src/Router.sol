@@ -10,14 +10,17 @@ contract Router is Ownable {
 
     mapping(uint256 => uint256) public chainIdToLzEid;
     mapping(uint256 => address) public chainIdToOApp;
-    mapping(address => mapping(uint256 => address)) public crosschainToken; // this chain token => dst chain id => token
+    mapping(address => mapping(uint256 => address)) public crosschainTokenByChainId; // this chain token => dst chain id => token
+    mapping(address => mapping(uint256 => address)) public crosschainTokenByLzEid; // this chain token => lz eid => token
+    
+    error LzEidNotSet(uint256 chainId, uint256 lzEid);
 
     event TokenDataStreamSet(address tokenDataStream);
     event IsHealthySet(address isHealthy);
     event LendingPoolSet(address lendingPool);
     event ChainIdToLzEidSet(uint256 chainId, uint256 lzEid);
     event ChainIdToOAppSet(uint256 chainId, address oApp);
-    event CrosschainTokenSet(address token, uint256 chainDst, address crosschainToken);
+    event CrosschainTokenSet(address token, uint256 chainDst, uint256 lzEid, address crosschainToken);
 
     constructor() Ownable(msg.sender) {}
 
@@ -47,7 +50,10 @@ contract Router is Ownable {
     }
 
     function setCrosschainToken(address _token, uint256 _chainDst, address _crosschainToken) public onlyOwner {
-        crosschainToken[_token][_chainDst] = _crosschainToken;
-        emit CrosschainTokenSet(_token, _chainDst, _crosschainToken);
+        uint256 _lzEid = chainIdToLzEid[_chainDst];
+        if (_lzEid == 0) revert LzEidNotSet(_chainDst, _lzEid);
+        crosschainTokenByLzEid[_token][_lzEid] = _crosschainToken;
+        crosschainTokenByChainId[_token][_chainDst] = _crosschainToken;
+        emit CrosschainTokenSet(_token, _chainDst, _lzEid, _crosschainToken);
     }
 }
