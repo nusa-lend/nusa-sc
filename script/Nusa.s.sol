@@ -86,7 +86,7 @@ contract Nusa is Script, Helper, HelperDeployment {
         // _setSendConfig();
         // _setReceiveConfig();
         // _setPeers();
-        _setEnforcedOptions();
+        // _setEnforcedOptions();
         // _setChainId();
 
         // router.setChainIdToLzEid(block.chainid == 8453 ? 42161 : 8453, dstEid1);

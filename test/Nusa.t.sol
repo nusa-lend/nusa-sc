@@ -363,8 +363,9 @@ contract NusaTest is Test, Helper, HelperDeployment {
         vm.startPrank(alice);
         uint256 amount = 500e6;
 
+        // TODO: HELPER GET FEE
         MessagingFee memory fee = IOAppBorrow(router.chainIdToOApp(block.chainid)).quoteSendString(
-            uint32(router.chainIdToLzEid(42161)), amount, address(usdc), "", false
+            uint32(router.chainIdToLzEid(42161)), amount, address(usdc), alice, "", false
         );
         console.log("fee", fee.nativeFee);
 

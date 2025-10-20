@@ -9,8 +9,8 @@ contract NusaUpgradeScript is Script, HelperDeployment {
     LendingPool public lendingPool;
 
     function run() public {
-        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
         lendingPool = new LendingPool();
         LendingPool(payable(block.chainid == 8453 ? BASE_Proxy : ARB_Proxy)).upgradeToAndCall(address(lendingPool), "");

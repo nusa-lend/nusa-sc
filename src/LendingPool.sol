@@ -205,7 +205,7 @@ contract LendingPool is
         } else {
             bytes memory options = "";
             IOAppBorrow(_oapp(block.chainid)).sendString{value: msg.value}(
-                uint32(_endPointId(_chainDst)), _amount, _token, options
+                uint32(_endPointId(_chainDst)), _amount, _token, _user, options
             );
         }
         emit Borrow(_user, _token, _amount, _chainDst);

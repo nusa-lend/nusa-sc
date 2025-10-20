@@ -365,17 +365,17 @@ contract NusaDeployedTest is Test, Helper, HelperDeployment {
     function test_borrow_crosschain() public {
         test_supply_collateral();
         test_supply_liquidity();
-        vm.startPrank(ARB_OAppBorrow);
+        vm.startPrank(alice);
         uint256 amount = 500e6;
 
-        // address crosschainToken = router.crosschainTokenByChainId(address(usdc), block.chainid == 8453 ? 42161 : 8453);
-        // MessagingFee memory fee = IOAppBorrow(router.chainIdToOApp(block.chainid)).quoteSendString(
-            // uint32(router.chainIdToLzEid(block.chainid == 8453 ? 42161 : 8453)), amount, address(crosschainToken), "", false
-        // );
-        // console.log("fee", fee.nativeFee);
+        address crosschainToken = router.crosschainTokenByChainId(address(usdc), block.chainid == 8453 ? 42161 : 8453);
+        MessagingFee memory fee = IOAppBorrow(router.chainIdToOApp(block.chainid)).quoteSendString(
+            uint32(router.chainIdToLzEid(block.chainid == 8453 ? 42161 : 8453)), amount, address(crosschainToken), alice, "", false
+        );
+        console.log("fee", fee.nativeFee);
 
-        lendingPool.borrow(alice, address(usdc), amount, 42161);
-        // lendingPool.borrow{value: fee.nativeFee}(alice, address(usdc), amount, 42161);
+        // lendingPool.borrow(alice, address(usdc), amount, 42161);
+        lendingPool.borrow{value: fee.nativeFee}(alice, address(usdc), amount, 42161);
         // assertEq(lendingPool.userBorrowShares(alice, 42161, address(usdc)), amount);
         vm.stopPrank();
 

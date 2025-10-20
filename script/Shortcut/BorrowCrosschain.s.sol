@@ -31,6 +31,7 @@ contract BorrowCrosschainScript is Script, HelperDeployment {
             uint32(Router(router).chainIdToLzEid(block.chainid == 8453 ? 42161 : 8453)),
             amount,
             address(crosschainToken),
+            user,
             "",
             false
         );

@@ -42,8 +42,8 @@ contract DeployOAppBorrowScript is Script, HelperDeployment {
     address oapp2;
 
     function run() external {
-        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
 
         console.log("Deploying OAppBorrow with deployer:", deployer);
         console.log("Deployer balance:", deployer.balance);
@@ -60,10 +60,10 @@ contract DeployOAppBorrowScript is Script, HelperDeployment {
         // _setLibraries();
         // _setSendConfig();
         // _setReceiveConfig();
-        // _setPeers();
+        _setPeers();
         _setEnforcedOptions();
-        // _setRouter(block.chainid == 8453 ? BASE_Router : ARB_Router);
-        // _setOApp();
+        _setRouter(block.chainid == 8453 ? BASE_Router : ARB_Router);
+        _setOApp();
         vm.stopBroadcast();
     }
 

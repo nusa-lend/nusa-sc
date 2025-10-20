@@ -27,19 +27,20 @@ contract OAppBorrow is OApp, OAppOptionsType3 {
         uint32 _dstEid,
         uint256 _amount,
         address _token,
+        address _user,
         bytes calldata _options,
         bool _payInLzToken
     ) public view returns (MessagingFee memory fee) {
-        bytes memory _message = abi.encode(_amount, _token);
+        bytes memory _message = abi.encode(_amount, _token, _user);
         fee = _quote(_dstEid, _message, combineOptions(_dstEid, SEND, _options), _payInLzToken);
     }
 
-    function sendString(uint32 _dstEid, uint256 _amount, address _token, bytes calldata _options) external payable {
+    function sendString(uint32 _dstEid, uint256 _amount, address _token, address _user, bytes calldata _options) external payable {
         _token = IRouter(router).crosschainTokenByLzEid(address(_token), _dstEid);
         if (_token == address(0)) {
             revert TokenNotSet(address(_token), _dstEid);
         }
-        bytes memory _message = abi.encode(_amount, _token);
+        bytes memory _message = abi.encode(_amount, _token, _user);
 
         _lzSend(
             _dstEid, _message, combineOptions(_dstEid, SEND, _options), MessagingFee(msg.value, 0), payable(msg.sender)
@@ -68,20 +69,17 @@ contract OAppBorrow is OApp, OAppOptionsType3 {
         address, /*_executor*/
         bytes calldata /*_extraData*/
     ) internal override {
-        (uint256 amount, address token) = abi.decode(_message, (uint256, address));
+        (uint256 amount, address token, address user) = abi.decode(_message, (uint256, address, address));
 
         lastMessage = _message;
-
-        // Convert bytes32 sender to address
-        address sender = address(uint160(uint256(_origin.sender)));
 
         // 3. (Optional) Trigger further on-chain actions.
         //    e.g., emit an event, mint tokens, call another contract, etc.
         //    emit MessageReceived(_origin.srcEid, _token);
 
-        ILendingPool(payable(lendingPool)).borrow(sender, token, amount, block.chainid);
+        ILendingPool(payable(lendingPool)).borrow(user, token, amount, block.chainid);
 
-        emit MessageReceived(_origin.srcEid, sender, _origin.nonce, token);
+        emit MessageReceived(_origin.srcEid, user, _origin.nonce, token);
     }
 
     function setLendingPool(address _lendingPool) public onlyOwner {
