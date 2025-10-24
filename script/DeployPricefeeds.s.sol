@@ -19,13 +19,26 @@ contract DeployPricefeeds is Script, HelperDeployment {
     Pricefeed public usdcPricefeed;
     Pricefeed public wethPricefeed;
     Pricefeed public wbtcPricefeed;
+    
+    // Tokenized Stocks Pricefeeds
+    Pricefeed public bib01Pricefeed;
+    Pricefeed public bcoinPricefeed;
+    Pricefeed public bcspxPricefeed;
+    Pricefeed public bibtaPricefeed;
+    Pricefeed public bhighPricefeed;
+    Pricefeed public btslaPricefeed;
+    Pricefeed public bgooglePricefeed;
+    Pricefeed public bnvdaPricefeed;
+    Pricefeed public bmsftPricefeed;
+    Pricefeed public bgmePricefeed;
+    Pricefeed public bzpr1Pricefeed;
 
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
     address deployer = vm.addr(privateKey);
 
     function run() external {
-        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
 
         console.log("Deploying all pricefeeds with deployer:", deployer);
         console.log("Deployer balance:", deployer.balance);
@@ -53,112 +66,206 @@ contract DeployPricefeeds is Script, HelperDeployment {
         address usdcToken = block.chainid == 8453 ? BASE_USDC : ARB_USDC;
         address wethToken = block.chainid == 8453 ? BASE_WETH : ARB_WETH;
         address wbtcToken = block.chainid == 8453 ? BASE_WBTC : ARB_WBTC;
+        
+        // Tokenized Stocks
+        address bib01Token = block.chainid == 8453 ? BASE_bIB01 : ARB_bIB01;
+        address bcoinToken = block.chainid == 8453 ? BASE_bCOIN : ARB_bCOIN;
+        address bcspxToken = block.chainid == 8453 ? BASE_bCSPX : ARB_bCSPX;
+        address bibtaToken = block.chainid == 8453 ? BASE_bIBTA : ARB_bIBTA;
+        address bhighToken = block.chainid == 8453 ? BASE_bHIGH : ARB_bHIGH;
+        address btslaToken = block.chainid == 8453 ? BASE_bTSLA : ARB_bTSLA;
+        address bgoogleToken = block.chainid == 8453 ? BASE_bGOOGL : ARB_bGOOGL;
+        address bnvdaToken = block.chainid == 8453 ? BASE_bNVDA : ARB_bNVDA;
+        address bmsftToken = block.chainid == 8453 ? BASE_bMSFT : ARB_bMSFT;
+        address bgmeToken = block.chainid == 8453 ? BASE_bGME : ARB_bGME;
+        address bzpr1Token = block.chainid == 8453 ? BASE_bZPR1 : ARB_bZPR1;
 
         // Deploy CADC Pricefeed
-        cadcPricefeed = new Pricefeed(cadcToken);
-        _logPricefeedAddress("CADC_Pricefeed", address(cadcPricefeed));
+        // cadcPricefeed = new Pricefeed(cadcToken);
+        // _logPricefeedAddress("CADC_Pricefeed", address(cadcPricefeed));
 
-        // Deploy CNGN Pricefeed
-        cngnPricefeed = new Pricefeed(cngnToken);
-        _logPricefeedAddress("CNGN_Pricefeed", address(cngnPricefeed));
+        // // Deploy CNGN Pricefeed
+        // cngnPricefeed = new Pricefeed(cngnToken);
+        // _logPricefeedAddress("CNGN_Pricefeed", address(cngnPricefeed));
 
-        // Deploy KRWT Pricefeed
-        krwtPricefeed = new Pricefeed(krwtToken);
-        _logPricefeedAddress("KRWT_Pricefeed", address(krwtPricefeed));
+        // // Deploy KRWT Pricefeed
+        // krwtPricefeed = new Pricefeed(krwtToken);
+        // _logPricefeedAddress("KRWT_Pricefeed", address(krwtPricefeed));
 
-        // Deploy TRYB Pricefeed
-        trybPricefeed = new Pricefeed(trybToken);
-        _logPricefeedAddress("TRYB_Pricefeed", address(trybPricefeed));
+        // // Deploy TRYB Pricefeed
+        // trybPricefeed = new Pricefeed(trybToken);
+        // _logPricefeedAddress("TRYB_Pricefeed", address(trybPricefeed));
 
-        // Deploy MXNE Pricefeed
-        mxnePricefeed = new Pricefeed(mxneToken);
-        _logPricefeedAddress("MXNE_Pricefeed", address(mxnePricefeed));
+        // // Deploy MXNE Pricefeed
+        // mxnePricefeed = new Pricefeed(mxneToken);
+        // _logPricefeedAddress("MXNE_Pricefeed", address(mxnePricefeed));
 
-        // Deploy XSGD Pricefeed
-        xsgdPricefeed = new Pricefeed(xsgdToken);
-        _logPricefeedAddress("XSGD_Pricefeed", address(xsgdPricefeed));
+        // // Deploy XSGD Pricefeed
+        // xsgdPricefeed = new Pricefeed(xsgdToken);
+        // _logPricefeedAddress("XSGD_Pricefeed", address(xsgdPricefeed));
 
-        // Deploy ZARP Pricefeed
-        zarpPricefeed = new Pricefeed(zarpToken);
-        _logPricefeedAddress("ZARP_Pricefeed", address(zarpPricefeed));
+        // // Deploy ZARP Pricefeed
+        // zarpPricefeed = new Pricefeed(zarpToken);
+        // _logPricefeedAddress("ZARP_Pricefeed", address(zarpPricefeed));
 
-        // Deploy IDRX Pricefeed
-        idrxPricefeed = new Pricefeed(idrxToken);
-        _logPricefeedAddress("IDRX_Pricefeed", address(idrxPricefeed));
+        // // Deploy IDRX Pricefeed
+        // idrxPricefeed = new Pricefeed(idrxToken);
+        // _logPricefeedAddress("IDRX_Pricefeed", address(idrxPricefeed));
 
-        // Deploy EURC Pricefeed
-        eurcPricefeed = new Pricefeed(eurcToken);
-        _logPricefeedAddress("EURC_Pricefeed", address(eurcPricefeed));
+        // // Deploy EURC Pricefeed
+        // eurcPricefeed = new Pricefeed(eurcToken);
+        // _logPricefeedAddress("EURC_Pricefeed", address(eurcPricefeed));
 
-        // Deploy USDC Pricefeed
-        usdcPricefeed = new Pricefeed(usdcToken);
-        _logPricefeedAddress("USDC_Pricefeed", address(usdcPricefeed));
+        // // Deploy USDC Pricefeed
+        // usdcPricefeed = new Pricefeed(usdcToken);
+        // _logPricefeedAddress("USDC_Pricefeed", address(usdcPricefeed));
 
-        // Deploy WETH Pricefeed
-        wethPricefeed = new Pricefeed(wethToken);
-        _logPricefeedAddress("WETH_Pricefeed", address(wethPricefeed));
+        // // Deploy WETH Pricefeed
+        // wethPricefeed = new Pricefeed(wethToken);
+        // _logPricefeedAddress("WETH_Pricefeed", address(wethPricefeed));
 
-        // Deploy WBTC Pricefeed
-        wbtcPricefeed = new Pricefeed(wbtcToken);
-        _logPricefeedAddress("WBTC_Pricefeed", address(wbtcPricefeed));
+        // // Deploy WBTC Pricefeed
+        // wbtcPricefeed = new Pricefeed(wbtcToken);
+        // _logPricefeedAddress("WBTC_Pricefeed", address(wbtcPricefeed));
+
+        // Deploy Tokenized Stocks Pricefeeds
+        bib01Pricefeed = new Pricefeed(bib01Token);
+        _logPricefeedAddress("bIB01_Pricefeed", address(bib01Pricefeed));
+
+        bcoinPricefeed = new Pricefeed(bcoinToken);
+        _logPricefeedAddress("bCOIN_Pricefeed", address(bcoinPricefeed));
+
+        bcspxPricefeed = new Pricefeed(bcspxToken);
+        _logPricefeedAddress("bCSPX_Pricefeed", address(bcspxPricefeed));
+
+        bibtaPricefeed = new Pricefeed(bibtaToken);
+        _logPricefeedAddress("bIBTA_Pricefeed", address(bibtaPricefeed));
+
+        bhighPricefeed = new Pricefeed(bhighToken);
+        _logPricefeedAddress("bHIGH_Pricefeed", address(bhighPricefeed));
+
+        btslaPricefeed = new Pricefeed(btslaToken);
+        _logPricefeedAddress("bTSLA_Pricefeed", address(btslaPricefeed));
+
+        bgooglePricefeed = new Pricefeed(bgoogleToken);
+        _logPricefeedAddress("bGOOGL_Pricefeed", address(bgooglePricefeed));
+
+        bnvdaPricefeed = new Pricefeed(bnvdaToken);
+        _logPricefeedAddress("bNVDA_Pricefeed", address(bnvdaPricefeed));
+
+        bmsftPricefeed = new Pricefeed(bmsftToken);
+        _logPricefeedAddress("bMSFT_Pricefeed", address(bmsftPricefeed));
+
+        bgmePricefeed = new Pricefeed(bgmeToken);
+        _logPricefeedAddress("bGME_Pricefeed", address(bgmePricefeed));
+
+        bzpr1Pricefeed = new Pricefeed(bzpr1Token);
+        _logPricefeedAddress("bZPR1_Pricefeed", address(bzpr1Pricefeed));
 
         console.log("\n=== All pricefeeds deployed successfully ===");
-        console.log("Total pricefeeds deployed: 12");
+        console.log("Total pricefeeds deployed: 23");
     }
 
     function _setInitialPrices() internal {
         console.log("\n=== Setting initial prices ===");
         
-        // Set realistic mock prices (in USD with 8 decimals)
-        // CADC: ~0.73 USD
-        cadcPricefeed.setPrice(1, 73000000, block.timestamp, block.timestamp, 1);
-        console.log("CADC price set to $0.73");
+        // // Set realistic mock prices (in USD with 8 decimals)
+        // // CADC: ~0.73 USD
+        // cadcPricefeed.setPrice(1, 73000000, block.timestamp, block.timestamp, 1);
+        // console.log("CADC price set to $0.73");
 
-        // CNGN: ~0.00073 USD (Nigerian Naira)
-        cngnPricefeed.setPrice(1, 730, block.timestamp, block.timestamp, 1);
-        console.log("CNGN price set to $0.00073");
+        // // CNGN: ~0.00073 USD (Nigerian Naira)
+        // cngnPricefeed.setPrice(1, 730, block.timestamp, block.timestamp, 1);
+        // console.log("CNGN price set to $0.00073");
 
-        // KRWT: ~0.00075 USD (Korean Won)
-        krwtPricefeed.setPrice(1, 750, block.timestamp, block.timestamp, 1);
-        console.log("KRWT price set to $0.00075");
+        // // KRWT: ~0.00075 USD (Korean Won)
+        // krwtPricefeed.setPrice(1, 750, block.timestamp, block.timestamp, 1);
+        // console.log("KRWT price set to $0.00075");
 
-        // TRYB: ~0.03 USD (Turkish Lira)
-        trybPricefeed.setPrice(1, 3000000, block.timestamp, block.timestamp, 1);
-        console.log("TRYB price set to $0.03");
+        // // TRYB: ~0.03 USD (Turkish Lira)
+        // trybPricefeed.setPrice(1, 3000000, block.timestamp, block.timestamp, 1);
+        // console.log("TRYB price set to $0.03");
 
-        // MXNE: ~0.00005 USD (Mexican Peso)
-        mxnePricefeed.setPrice(1, 5000, block.timestamp, block.timestamp, 1);
-        console.log("MXNE price set to $0.00005");
+        // // MXNE: ~0.00005 USD (Mexican Peso)
+        // mxnePricefeed.setPrice(1, 5000, block.timestamp, block.timestamp, 1);
+        // console.log("MXNE price set to $0.00005");
 
-        // XSGD: ~0.74 USD (Singapore Dollar)
-        xsgdPricefeed.setPrice(1, 74000000, block.timestamp, block.timestamp, 1);
-        console.log("XSGD price set to $0.74");
+        // // XSGD: ~0.74 USD (Singapore Dollar)
+        // xsgdPricefeed.setPrice(1, 74000000, block.timestamp, block.timestamp, 1);
+        // console.log("XSGD price set to $0.74");
 
-        // ZARP: ~0.055 USD (South African Rand)
-        zarpPricefeed.setPrice(1, 5500000, block.timestamp, block.timestamp, 1);
-        console.log("ZARP price set to $0.055");
+        // // ZARP: ~0.055 USD (South African Rand)
+        // zarpPricefeed.setPrice(1, 5500000, block.timestamp, block.timestamp, 1);
+        // console.log("ZARP price set to $0.055");
 
-        // IDRX: ~0.000067 USD (Indonesian Rupiah)
-        idrxPricefeed.setPrice(1, 67, block.timestamp, block.timestamp, 1);
-        console.log("IDRX price set to $0.000067");
+        // // IDRX: ~0.000067 USD (Indonesian Rupiah)
+        // idrxPricefeed.setPrice(1, 67, block.timestamp, block.timestamp, 1);
+        // console.log("IDRX price set to $0.000067");
 
-        // EURC: ~1.08 USD (Euro)
-        eurcPricefeed.setPrice(1, 108000000, block.timestamp, block.timestamp, 1);
-        console.log("EURC price set to $1.08");
+        // // EURC: ~1.08 USD (Euro)
+        // eurcPricefeed.setPrice(1, 108000000, block.timestamp, block.timestamp, 1);
+        // console.log("EURC price set to $1.08");
 
-        // USDC: ~1.00 USD (US Dollar)
-        usdcPricefeed.setPrice(1, 100000000, block.timestamp, block.timestamp, 1);
-        console.log("USDC price set to $1.00");
+        // // USDC: ~1.00 USD (US Dollar)
+        // usdcPricefeed.setPrice(1, 100000000, block.timestamp, block.timestamp, 1);
+        // console.log("USDC price set to $1.00");
 
-        // WETH: ~3500 USD (Ethereum)
-        wethPricefeed.setPrice(1, 350000000000, block.timestamp, block.timestamp, 1);
-        console.log("WETH price set to $3500");
+        // // WETH: ~3500 USD (Ethereum)
+        // wethPricefeed.setPrice(1, 350000000000, block.timestamp, block.timestamp, 1);
+        // console.log("WETH price set to $3500");
 
-        // WBTC: ~95000 USD (Bitcoin)
-        wbtcPricefeed.setPrice(1, 9500000000000, block.timestamp, block.timestamp, 1);
-        console.log("WBTC price set to $95000");
+        // // WBTC: ~95000 USD (Bitcoin)
+        // wbtcPricefeed.setPrice(1, 9500000000000, block.timestamp, block.timestamp, 1);
+        // console.log("WBTC price set to $95000");
+
+        // === TOKENIZED STOCKS PRICES ===
+        
+        // bIB01: ~100 USD (Treasury Bond)
+        bib01Pricefeed.setPrice(1, 10000000000, block.timestamp, block.timestamp, 1);
+        console.log("bIB01 price set to $100");
+
+        // bCOIN: ~200 USD (Coinbase)
+        bcoinPricefeed.setPrice(1, 20000000000, block.timestamp, block.timestamp, 1);
+        console.log("bCOIN price set to $200");
+
+        // bCSPX: ~500 USD (S&P 500 ETF)
+        bcspxPricefeed.setPrice(1, 50000000000, block.timestamp, block.timestamp, 1);
+        console.log("bCSPX price set to $500");
+
+        // bIBTA: ~98 USD (Treasury Bond 1-3yr)
+        bibtaPricefeed.setPrice(1, 9800000000, block.timestamp, block.timestamp, 1);
+        console.log("bIBTA price set to $98");
+
+        // bHIGH: ~105 USD (High Yield Bond)
+        bhighPricefeed.setPrice(1, 10500000000, block.timestamp, block.timestamp, 1);
+        console.log("bHIGH price set to $105");
+
+        // bTSLA: ~250 USD (Tesla)
+        btslaPricefeed.setPrice(1, 25000000000, block.timestamp, block.timestamp, 1);
+        console.log("bTSLA price set to $250");
+
+        // bGOOGL: ~170 USD (Google/Alphabet)
+        bgooglePricefeed.setPrice(1, 17000000000, block.timestamp, block.timestamp, 1);
+        console.log("bGOOGL price set to $170");
+
+        // bNVDA: ~140 USD (NVIDIA)
+        bnvdaPricefeed.setPrice(1, 14000000000, block.timestamp, block.timestamp, 1);
+        console.log("bNVDA price set to $140");
+
+        // bMSFT: ~420 USD (Microsoft)
+        bmsftPricefeed.setPrice(1, 42000000000, block.timestamp, block.timestamp, 1);
+        console.log("bMSFT price set to $420");
+
+        // bGME: ~20 USD (GameStop)
+        bgmePricefeed.setPrice(1, 2000000000, block.timestamp, block.timestamp, 1);
+        console.log("bGME price set to $20");
+
+        // bZPR1: ~100 USD (T-Bill)
+        bzpr1Pricefeed.setPrice(1, 10000000000, block.timestamp, block.timestamp, 1);
+        console.log("bZPR1 price set to $100");
 
         console.log("\n=== All initial prices set successfully ===");
+        console.log("Total tokens with prices set: 23");
     }
 
     function _logPricefeedAddress(string memory pricefeedName, address pricefeedAddress) internal view {

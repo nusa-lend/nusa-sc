@@ -32,6 +32,17 @@ import {XSGD} from "../src/mocks/XSGD.sol";
 import {ZARP} from "../src/mocks/ZARP.sol";
 import {IDRX} from "../src/mocks/IDRX.sol";
 import {EURC} from "../src/mocks/EURC.sol";
+import {bIB01} from "../src/mocks/bIB01.sol";
+import {bCOIN} from "../src/mocks/bCOIN.sol";
+import {bCSPX} from "../src/mocks/bCSPX.sol";
+import {bIBTA} from "../src/mocks/bIBTA.sol";
+import {bHIGH} from "../src/mocks/bHIGH.sol";
+import {bTSLA} from "../src/mocks/bTSLA.sol";
+import {bGOOGL} from "../src/mocks/bGOOGL.sol";
+import {bNVDA} from "../src/mocks/bNVDA.sol";
+import {bMSFT} from "../src/mocks/bMSFT.sol";
+import {bGME} from "../src/mocks/bGME.sol";
+import {bZPR1} from "../src/mocks/bZPR1.sol";
 
 contract Nusa is Script, Helper, HelperDeployment {
     using OptionsBuilder for bytes;
@@ -48,6 +59,19 @@ contract Nusa is Script, Helper, HelperDeployment {
     ZARP public zarp;
     IDRX public idrx;
     EURC public eurc;
+    
+    // Tokenized Stocks
+    bIB01 public bib01;
+    bCOIN public bcoin;
+    bCSPX public bcspx;
+    bIBTA public bibta;
+    bHIGH public bhigh;
+    bTSLA public btsla;
+    bGOOGL public bgoogle;
+    bNVDA public bnvda;
+    bMSFT public bmsft;
+    bGME public bgme;
+    bZPR1 public bzpr1;
 
     address public usdc_deployed;
     address public weth_deployed;
@@ -61,6 +85,19 @@ contract Nusa is Script, Helper, HelperDeployment {
     address public zarp_deployed;
     address public idrx_deployed;
     address public eurc_deployed;
+    
+    // Tokenized Stocks deployed addresses
+    address public bib01_deployed;
+    address public bcoin_deployed;
+    address public bcspx_deployed;
+    address public bibta_deployed;
+    address public bhigh_deployed;
+    address public btsla_deployed;
+    address public bgoogle_deployed;
+    address public bnvda_deployed;
+    address public bmsft_deployed;
+    address public bgme_deployed;
+    address public bzpr1_deployed;
     address public tokenDataStream_deployed;
     address public lendingPool_deployed;
     address public oappBorrow_deployed;
@@ -166,6 +203,19 @@ contract Nusa is Script, Helper, HelperDeployment {
             zarp = block.chainid == 8453 ? ZARP(BASE_ZARP) : ZARP(ARB_ZARP);
             idrx = block.chainid == 8453 ? IDRX(BASE_IDRX) : IDRX(ARB_IDRX);
             eurc = block.chainid == 8453 ? EURC(BASE_EURC) : EURC(ARB_EURC);
+            
+            // Tokenized Stocks
+            bib01 = block.chainid == 8453 ? bIB01(BASE_bIB01) : bIB01(ARB_bIB01);
+            bcoin = block.chainid == 8453 ? bCOIN(BASE_bCOIN) : bCOIN(ARB_bCOIN);
+            bcspx = block.chainid == 8453 ? bCSPX(BASE_bCSPX) : bCSPX(ARB_bCSPX);
+            bibta = block.chainid == 8453 ? bIBTA(BASE_bIBTA) : bIBTA(ARB_bIBTA);
+            bhigh = block.chainid == 8453 ? bHIGH(BASE_bHIGH) : bHIGH(ARB_bHIGH);
+            btsla = block.chainid == 8453 ? bTSLA(BASE_bTSLA) : bTSLA(ARB_bTSLA);
+            bgoogle = block.chainid == 8453 ? bGOOGL(BASE_bGOOGL) : bGOOGL(ARB_bGOOGL);
+            bnvda = block.chainid == 8453 ? bNVDA(BASE_bNVDA) : bNVDA(ARB_bNVDA);
+            bmsft = block.chainid == 8453 ? bMSFT(BASE_bMSFT) : bMSFT(ARB_bMSFT);
+            bgme = block.chainid == 8453 ? bGME(BASE_bGME) : bGME(ARB_bGME);
+            bzpr1 = block.chainid == 8453 ? bZPR1(BASE_bZPR1) : bZPR1(ARB_bZPR1);
         }
         if (!isDeployed) {
             tokenDataStream = new TokenDataStream();
@@ -188,18 +238,43 @@ contract Nusa is Script, Helper, HelperDeployment {
             // tokenDataStream.setTokenPriceFeed(address(zarp), address(BASE_ZARP_USD));
             // tokenDataStream.setTokenPriceFeed(address(idrx), address(BASE_IDRX_USD));
             // tokenDataStream.setTokenPriceFeed(address(eurc), address(BASE_EURC_USD));
+            
+            tokenDataStream.setTokenPriceFeed(address(bib01), address(BASE_bIB01_USD));
+            tokenDataStream.setTokenPriceFeed(address(bcoin), address(BASE_bCOIN_USD));
+            tokenDataStream.setTokenPriceFeed(address(bcspx), address(BASE_bCSPX_USD));
+            tokenDataStream.setTokenPriceFeed(address(bibta), address(BASE_bIBTA_USD));
+            tokenDataStream.setTokenPriceFeed(address(bhigh), address(BASE_bHIGH_USD));
+            tokenDataStream.setTokenPriceFeed(address(btsla), address(BASE_bTSLA_USD));
+            tokenDataStream.setTokenPriceFeed(address(bgoogle), address(BASE_bGOOGL_USD));
+            tokenDataStream.setTokenPriceFeed(address(bnvda), address(BASE_bNVDA_USD));
+            tokenDataStream.setTokenPriceFeed(address(bmsft), address(BASE_bMSFT_USD));
+            tokenDataStream.setTokenPriceFeed(address(bgme), address(BASE_bGME_USD));
+            tokenDataStream.setTokenPriceFeed(address(bzpr1), address(BASE_bZPR1_USD));
 
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(usdc), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(weth), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cadc), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cngn), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(krwt), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(tryb), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(mxne), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(xsgd), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(zarp), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(idrx), true);
-            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(eurc), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(usdc), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(weth), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cadc), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cngn), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(krwt), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(tryb), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(mxne), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(xsgd), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(zarp), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(idrx), true);
+            // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(eurc), true);
+            
+            // Activate Tokenized Stocks
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bib01), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bcoin), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bcspx), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bibta), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bhigh), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(btsla), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bgoogle), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bnvda), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bmsft), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bgme), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bzpr1), true);
         } else if (block.chainid == 42161) {
             tokenDataStream.setTokenPriceFeed(address(usdc), address(ARB_USDC_USD));
             tokenDataStream.setTokenPriceFeed(address(weth), address(ARB_ETH_USD));

@@ -12,9 +12,10 @@ interface IToken {
 
 contract MintScript is Script, HelperDeployment {
     // *** FILL THIS ***
-    address public token = BASE_CADC;
+    address public token = BASE_bTSLA;
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
-    address public minter = vm.envAddress("PUBLIC_KEY");
+    // address public minter = vm.envAddress("PUBLIC_KEY");
+    address public minter = 0xfd1AF2826012385a84A8E9BE8a1586293FB3980B;
     uint256 public amount = 100_000_000;
     // *****************
 
