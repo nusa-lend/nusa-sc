@@ -12,16 +12,16 @@ interface IToken {
 
 contract MintScript is Script, HelperDeployment {
     // *** FILL THIS ***
-    address public token = BASE_bTSLA;
+    address public token = ARB_CADC;
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
-    // address public minter = vm.envAddress("PUBLIC_KEY");
-    address public minter = 0xfd1AF2826012385a84A8E9BE8a1586293FB3980B;
+    address public minter = vm.envAddress("PUBLIC_KEY");
+    // address public minter = 0xfd1AF2826012385a84A8E9BE8a1586293FB3980B;
     uint256 public amount = 100_000_000;
     // *****************
 
     function run() public {
-        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startBroadcast(privateKey);
         console.log("Token = %s", IERC20Metadata(token).name());
         console.log("Balance before minting = %s", IERC20(token).balanceOf(minter));

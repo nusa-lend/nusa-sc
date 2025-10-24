@@ -105,7 +105,6 @@ contract NusaDeployedTest is Test, Helper, HelperDeployment {
     function _deployNusaCore() internal {
         router = Router(block.chainid == 8453 ? BASE_Router : ARB_Router);
         isHealthy = IsHealthy(block.chainid == 8453 ? BASE_IsHealthy : ARB_IsHealthy);
-        // lendingPool = LendingPool(payable(block.chainid == 8453 ? BASE_LendingPool : ARB_LendingPool));
         lendingPool = ILendingPool(payable(block.chainid == 8453 ? BASE_Proxy : ARB_Proxy));
 
         router.setTokenDataStream(address(tokenDataStream));
@@ -275,10 +274,12 @@ contract NusaDeployedTest is Test, Helper, HelperDeployment {
     // RUN
     // forge test -vvv --match-test test_supply_collateral --match-contract NusaDeployedTest
     function test_supply_collateral() public {
-        vm.startPrank(alice);
+        vm.startPrank(owner);
         uint256 amount = 1_000e18;
-        IERC20(address(weth)).approve(address(lendingPool), amount);
-        lendingPool.supplyCollateral(alice, address(weth), amount);
+        IERC20(BASE_bTSLA).approve(address(lendingPool), amount);
+        // lendingPool.supplyCollateral(alice, BASE_bTSLA, amount);
+        console.log("balance tsla", IERC20(BASE_bTSLA).balanceOf(owner));
+        ILendingPool(payable(block.chainid == 8453 ? BASE_Proxy : ARB_Proxy)).supplyCollateral(owner, BASE_bTSLA, amount);
         // assertEq(lendingPool.userCollateral(alice, block.chainid, address(weth)), amount);
         vm.stopPrank();
     }

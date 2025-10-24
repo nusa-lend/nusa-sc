@@ -59,7 +59,7 @@ contract Nusa is Script, Helper, HelperDeployment {
     ZARP public zarp;
     IDRX public idrx;
     EURC public eurc;
-    
+
     // Tokenized Stocks
     bIB01 public bib01;
     bCOIN public bcoin;
@@ -85,7 +85,7 @@ contract Nusa is Script, Helper, HelperDeployment {
     address public zarp_deployed;
     address public idrx_deployed;
     address public eurc_deployed;
-    
+
     // Tokenized Stocks deployed addresses
     address public bib01_deployed;
     address public bcoin_deployed;
@@ -135,8 +135,8 @@ contract Nusa is Script, Helper, HelperDeployment {
     bool public isDeployed;
 
     function run() public {
-        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
-        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startBroadcast(privateKey);
 
         isDeployed = _isDeployed(true);
@@ -203,7 +203,7 @@ contract Nusa is Script, Helper, HelperDeployment {
             zarp = block.chainid == 8453 ? ZARP(BASE_ZARP) : ZARP(ARB_ZARP);
             idrx = block.chainid == 8453 ? IDRX(BASE_IDRX) : IDRX(ARB_IDRX);
             eurc = block.chainid == 8453 ? EURC(BASE_EURC) : EURC(ARB_EURC);
-            
+
             // Tokenized Stocks
             bib01 = block.chainid == 8453 ? bIB01(BASE_bIB01) : bIB01(ARB_bIB01);
             bcoin = block.chainid == 8453 ? bCOIN(BASE_bCOIN) : bCOIN(ARB_bCOIN);
@@ -238,7 +238,7 @@ contract Nusa is Script, Helper, HelperDeployment {
             // tokenDataStream.setTokenPriceFeed(address(zarp), address(BASE_ZARP_USD));
             // tokenDataStream.setTokenPriceFeed(address(idrx), address(BASE_IDRX_USD));
             // tokenDataStream.setTokenPriceFeed(address(eurc), address(BASE_EURC_USD));
-            
+
             tokenDataStream.setTokenPriceFeed(address(bib01), address(BASE_bIB01_USD));
             tokenDataStream.setTokenPriceFeed(address(bcoin), address(BASE_bCOIN_USD));
             tokenDataStream.setTokenPriceFeed(address(bcspx), address(BASE_bCSPX_USD));
@@ -262,7 +262,7 @@ contract Nusa is Script, Helper, HelperDeployment {
             // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(zarp), true);
             // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(idrx), true);
             // LendingPool(payable(lendingPool_deployed)).setTokenActive(address(eurc), true);
-            
+
             // Activate Tokenized Stocks
             LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bib01), true);
             LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bcoin), true);
@@ -287,6 +287,43 @@ contract Nusa is Script, Helper, HelperDeployment {
             tokenDataStream.setTokenPriceFeed(address(zarp), address(ARB_ZARP_USD));
             tokenDataStream.setTokenPriceFeed(address(idrx), address(ARB_IDRX_USD));
             tokenDataStream.setTokenPriceFeed(address(eurc), address(ARB_EURC_USD));
+
+            tokenDataStream.setTokenPriceFeed(address(bib01), address(ARB_bIB01_USD));
+            tokenDataStream.setTokenPriceFeed(address(bcoin), address(ARB_bCOIN_USD));
+            tokenDataStream.setTokenPriceFeed(address(bcspx), address(ARB_bCSPX_USD));
+            tokenDataStream.setTokenPriceFeed(address(bibta), address(ARB_bIBTA_USD));
+            tokenDataStream.setTokenPriceFeed(address(bhigh), address(ARB_bHIGH_USD));
+            tokenDataStream.setTokenPriceFeed(address(btsla), address(ARB_bTSLA_USD));
+            tokenDataStream.setTokenPriceFeed(address(bgoogle), address(ARB_bGOOGL_USD));
+            tokenDataStream.setTokenPriceFeed(address(bnvda), address(ARB_bNVDA_USD));
+            tokenDataStream.setTokenPriceFeed(address(bmsft), address(ARB_bMSFT_USD));
+            tokenDataStream.setTokenPriceFeed(address(bgme), address(ARB_bGME_USD));
+            tokenDataStream.setTokenPriceFeed(address(bzpr1), address(ARB_bZPR1_USD));
+
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(usdc), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(weth), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cadc), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(cngn), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(krwt), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(tryb), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(mxne), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(xsgd), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(zarp), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(idrx), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(eurc), true);
+
+            // Activate Tokenized Stocks
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bib01), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bcoin), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bcspx), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bibta), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bhigh), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(btsla), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bgoogle), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bnvda), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bmsft), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bgme), true);
+            LendingPool(payable(lendingPool_deployed)).setTokenActive(address(bzpr1), true);
         }
     }
 
