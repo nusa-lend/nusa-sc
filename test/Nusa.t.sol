@@ -65,9 +65,9 @@ contract NusaTest is Test, Helper, HelperDeployment {
     uint16 constant SEND = 1; // Message type for send function
 
     function setUp() public {
-        // vm.createSelectFork(vm.rpcUrl("base_mainnet"));
+        vm.createSelectFork(vm.rpcUrl("base_mainnet"));
         // vm.createSelectFork(vm.rpcUrl("hyperliquid_mainnet"));
-        vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
+        // vm.createSelectFork(vm.rpcUrl("arb_mainnet"));
         vm.startPrank(owner);
         _deployMockToken();
         _deployNusaCore();

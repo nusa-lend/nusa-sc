@@ -1,34 +1,65 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
+/**
+ * @title HelperDeployment
+ * @author Nusa Protocol Team
+ * @notice Contract containing deployment configuration constants for mainnet deployment
+ * @dev This contract stores all the necessary addresses and configuration values for
+ *      deploying the Nusa protocol on Base and Arbitrum mainnets. It includes LayerZero
+ *      infrastructure addresses, token addresses, and deployed protocol contract addresses.
+ * 
+ * Key Features:
+ * - LayerZero endpoint and library configurations for Base and Arbitrum
+ * - DVN (Decentralized Verifier Network) addresses for message verification
+ * - Token addresses for stablecoins and tokenized stocks on both chains
+ * - Protocol contract addresses for cross-chain reference
+ * - Mainnet-ready configuration constants
+ */
 contract HelperDeployment {
-    // ***** MAINNET *****
+    // =============================================================
+    //                    MAINNET CONFIGURATION
+    // =============================================================
 
-    // ********* LAYERZERO CONFIGURATION ***********
+    // =============================================================
+    //                  LAYERZERO INFRASTRUCTURE
+    // =============================================================
+
+    /// @notice LayerZero endpoint addresses for cross-chain messaging
     address public BASE_LZ_ENDPOINT = 0x1a44076050125825900e736c501f859c50fE728c;
     address public ARB_LZ_ENDPOINT = 0x1a44076050125825900e736c501f859c50fE728c;
 
+    /// @notice LayerZero send library addresses for outbound messages
     address public BASE_SEND_LIB = 0xB5320B0B3a13cC860893E2Bd79FCd7e13484Dda2;
     address public ARB_SEND_LIB = 0x975bcD720be66659e3EB3C0e4F1866a3020E493A;
 
+    /// @notice LayerZero receive library addresses for inbound messages
     address public BASE_RECEIVE_LIB = 0xc70AB6f32772f59fBfc23889Caf4Ba3376C84bAf;
     address public ARB_RECEIVE_LIB = 0x7B9E184e07a6EE1aC23eAe0fe8D6Be2f663f05e6;
 
+    /// @notice LayerZero endpoint IDs for chain identification
     uint32 public BASE_EID = 30184;
     uint32 public ARB_EID = 30110;
 
+    /// @notice Decentralized Verifier Network (DVN) addresses for Base chain
     address public BASE_DVN1 = 0x554833698Ae0FB22ECC90B01222903fD62CA4B47; // Canary
     address public BASE_DVN2 = 0xa7b5189bcA84Cd304D8553977c7C614329750d99; // Horizen
     address public BASE_DVN3 = 0x9e059a54699a285714207b43B055483E78FAac25; // LayerZeroLabs
 
+    /// @notice Decentralized Verifier Network (DVN) addresses for Arbitrum chain
     address public ARB_DVN1 = 0x19670Df5E16bEa2ba9b9e68b48C054C5bAEa06B8; // Horizen
     address public ARB_DVN2 = 0xf2E380c90e6c09721297526dbC74f870e114dfCb; // Canary
     address public ARB_DVN3 = 0x2f55C492897526677C5B68fb199ea31E2c126416; // LayerZeroLabs
 
+    /// @notice LayerZero executor addresses for message execution
     address public BASE_EXECUTOR = 0x2CCA08ae69E0C44b18a57Ab2A87644234dAebaE4;
     address public ARB_EXECUTOR = 0x31CAe3B7fB82d847621859fb1585353c5720660D;
-    // *****************************************************
 
+    // =============================================================
+    //                     BASE CHAIN TOKENS
+    // =============================================================
+
+    /// @notice Base chain stablecoin and major token addresses
     address public BASE_USDC = 0xe3BaB20B2711e0577C46d14fd10bfFC0961036C3;
     address public BASE_WETH = 0xE29A9fBdf3d83c126C6366D7f401473Ab0850e7F;
     address public BASE_WBTC = 0xEF0CeF5eB4F2B475b00C9Cae5E58065f9f5062E8;
